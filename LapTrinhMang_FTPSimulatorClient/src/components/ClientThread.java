@@ -28,7 +28,7 @@ import models.ObjectRequest;
  *
  * @author HUỲNH QUANG VINH
  */
-public class ClientThread {
+public class ClientThread{
 
     private static Socket socket;
     private static BufferedWriter out;
@@ -40,6 +40,7 @@ public class ClientThread {
     private static FileOutputStream fileOutputStream;
     private static boolean isDisconnect = false;
 
+    // <editor-fold defaultstate="collapsed" desc="function connect">
     public static void connect(String host, int port) {
         try {
             socket = new Socket(host, port);
@@ -58,10 +59,12 @@ public class ClientThread {
             };
             Thread thread = new Thread(runnable);
             thread.start();
+            System.out.println("ok");
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Xử lý gửi - nhận file phía Client (không dùng trong đây)">
     private static void saveFile() {
@@ -171,7 +174,18 @@ public class ClientThread {
     public static void request(String message, Object object) {
         try {
             objOutputStream.writeObject(new ObjectRequest(message, object));
+            objOutputStream.flush();
             objOutputStream.reset();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void request(String data) {
+        try {
+            out.write(data);
+            out.newLine();
+            out.flush();
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -262,13 +276,14 @@ public class ClientThread {
 
     public static void sendMessage(String message) {
         try {
-            out.write(message + ";\n");
+            out.write(message);
+            out.newLine();
             out.flush();
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
 //    public static void disconnect() {
 //        isDisconnect = true;
 //        try {
@@ -287,18 +302,19 @@ public class ClientThread {
         }
     }
 
-//    private static String getMessage() {
-//        String message;
-//        try {
-//            message = in.readLine().replace("\n", "").replace("\r", "");
-//            if (String.valueOf(message.charAt(0)).equalsIgnoreCase("y")) {
-//                message = message.substring(1, message.length());
-//            }
-//        } catch (Exception ex) {
-//            message = "ACCCEP_DISCONNECT";
-//        }
-//        return message;
-//    }
+    private static String getMessage() {
+        String message;
+        try {
+            message = in.readLine().replace("\n", "").replace("\r", "");
+            if (String.valueOf(message.charAt(0)).equalsIgnoreCase("y")) {
+                message = message.substring(1, message.length());
+            }
+        } catch (Exception ex) {
+            message = "ACCCEP_DISCONNECT";
+        }
+        return message;
+    }
+
 //    public static void sendObjectUser(Users user) {
 //        try {
 //            objOutputStream.writeObject(user);
@@ -320,10 +336,11 @@ public class ClientThread {
         layout.show(parent, panelName);
     }
 
-    private static void listen() {
+    public static void listen() {
         System.out.println("CLient is running...");
         try {
             while (!isDisconnect) {
+
                 ObjectRequest response;
                 synchronized (objInputStream) {
                     response = (ObjectRequest) objInputStream.readObject();
@@ -343,6 +360,8 @@ public class ClientThread {
                     }
                     case "RESPONSE_VERIFY_REGISTER": {
                         System.out.println("Server said: " + message);
+
+                        // version_1
                         // HandleResult result = (HandleResult) objInputStream.readObject();
                         HandleResult result = (HandleResult) response.getObject();
                         if (result != null) {
@@ -391,8 +410,9 @@ public class ClientThread {
                         break;
                 }
             }
-            out.close();
+            System.out.println("Client closed connection");
             in.close();
+            out.close();
             socket.close();
             Thread.sleep(3000); // ngủ 3s sau đó chấm dứt chương trình
             System.exit(0);

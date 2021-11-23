@@ -5,6 +5,7 @@ import features.Encryptions;
 import features.FileExtensions;
 import features.ThreadRandoms;
 import handlers.FileHandler;
+import handlers.Handler;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -55,7 +56,9 @@ public class ClientUI extends javax.swing.JFrame {
 
     public ClientUI() {
         initComponents();
+        
         ClientThread.connect("localhost", 42000);
+
         setLocationRelativeTo(this);
         this.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
         pnlLogin.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
@@ -135,6 +138,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         btnSignIn_Anonymous = new javax.swing.JButton();
+        btntest = new javax.swing.JButton();
         jLabel14 = new RoundedLable(50, new Color(69,156,81));
         jPanel3 = new RoundedPanel(100, new Color(83,187,98));
         jLabel16 = new javax.swing.JLabel();
@@ -180,7 +184,7 @@ public class ClientUI extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        btnShare = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
@@ -280,11 +284,6 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
         jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel13.setText("Login FCloud");
-        jLabel13.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel13MouseClicked(evt);
-            }
-        });
         jPanel1.add(jLabel13);
         jLabel13.setBounds(20, 30, 350, 100);
 
@@ -313,6 +312,15 @@ public class ClientUI extends javax.swing.JFrame {
         });
         jPanel1.add(btnSignIn_Anonymous);
         btnSignIn_Anonymous.setBounds(100, 465, 210, 30);
+
+        btntest.setText("test");
+        btntest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btntestActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btntest);
+        btntest.setBounds(30, 10, 51, 23);
 
         pnlLogin.add(jPanel1);
         jPanel1.setBounds(520, 20, 390, 530);
@@ -654,19 +662,19 @@ public class ClientUI extends javax.swing.JFrame {
         pnlMyCloud.add(jButton3);
         jButton3.setBounds(640, 60, 130, 33);
 
-        jButton4.setBackground(new java.awt.Color(212, 255, 255));
-        jButton4.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-downloadfile-25.png"))); // NOI18N
-        jButton4.setText(" Download");
-        jButton4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jButton4.setBorderPainted(false);
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        btnShare.setBackground(new java.awt.Color(212, 255, 255));
+        btnShare.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
+        btnShare.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-downloadfile-25.png"))); // NOI18N
+        btnShare.setText(" Download");
+        btnShare.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        btnShare.setBorderPainted(false);
+        btnShare.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                btnShareActionPerformed(evt);
             }
         });
-        pnlMyCloud.add(jButton4);
-        jButton4.setBounds(640, 110, 130, 33);
+        pnlMyCloud.add(btnShare);
+        btnShare.setBounds(640, 110, 130, 33);
 
         pnlSection.add(pnlMyCloud, "pnlMyCloud");
 
@@ -819,7 +827,9 @@ public class ClientUI extends javax.swing.JFrame {
 
         // check đã kiểm tra đầu vào
         if (!isVerify) {  // nếu chưa check
+
             ClientThread.request("verify_register", user);
+            // version_1
 //            ClientThread.sendMessage("verify_register");    // bắn thông báo check đầu vào
 //            ClientThread.sendObjectUser(user);    // bắn thông tin user cho server
             while (processHandler) {
@@ -834,42 +844,41 @@ public class ClientUI extends javax.swing.JFrame {
                 lblVerifyInfo.setVisible(true);
                 txtVerifyCode.setVisible(true);
                 isVerify = true;    // set giá trị thành đã check
-//                JOptionPane.showMessageDialog(rootPane, verifyCode);
             }
         } else {
-            if (txtVerifyCode.getText().trim().equals(String.valueOf(verifyCode).trim())) {
-                if (cboRegis_Male.isSelected()) {
-                    user.setSex("Male");
-                } else {
-                    user.setSex("FeMale");
-                }
-                user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
-                user.setStatus("unblock");
-                user.setCreateAt(DateHelper.Now());
-                ClientThread.request("register", user);
-//                ClientThread.sendMessage("register");
-//                ClientThread.sendObjectUser(user);
-                while (processHandler) {
-                    System.out.println("watting handler register...");
-                    // do not something...
-                }
-                Message(messageResult);
-                if (statusResult) {     // result ok
-                    repaint();
-                    ClientThread.tranferLayout(pnlContainer, "pnlLogin");
-                    txtRegis_Email.setText("");
-                    txtRegis_Pass.setText("");
-                    txtRegis_FullName.setText("");
-                    isVerify = false;
-                    verifyCode = 0;
-                    lblVerifyInfo.setVisible(false);
-                    txtVerifyCode.setVisible(false);
-                }
-            } else {
-                Message("Mã xác thực không chính xác.!!!");
-            }
-            setDefaultProcessHandler();
+//            if (txtVerifyCode.getText().trim().equals(String.valueOf(verifyCode).trim())) {
+//                if (cboRegis_Male.isSelected()) {
+//                    user.setSex("Male");
+//                } else {
+//                    user.setSex("FeMale");
+//                }
+//                user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
+//                user.setStatus("unblock");
+//                user.setCreateAt(DateHelper.Now());
+//                ClientThread.request("register", user);
+////                ClientThread.sendMessage("register");
+////                ClientThread.sendObjectUser(user);
+//                while (processHandler) {
+//                    System.out.println("watting handler register...");
+//                    // do not something...
+//                }
+//                Message(messageResult);
+//                if (statusResult) {     // result ok
+//                    repaint();
+//                    ClientThread.tranferLayout(pnlContainer, "pnlLogin");
+//                    txtRegis_Email.setText("");
+//                    txtRegis_Pass.setText("");
+//                    txtRegis_FullName.setText("");
+//                    isVerify = false;
+//                    verifyCode = 0;
+//                    lblVerifyInfo.setVisible(false);
+//                    txtVerifyCode.setVisible(false);
+//                }
+//            } else {
+//                Message("Mã xác thực không chính xác.!!!");
+//            }
         }
+        setDefaultProcessHandler();
     }//GEN-LAST:event_lblRegisterMouseClicked
 
     private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
@@ -1182,13 +1191,14 @@ public class ClientUI extends javax.swing.JFrame {
         setDefaultProcessHandler();
     }//GEN-LAST:event_btnSignIn_AnonymousActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void btnShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShareActionPerformed
         ClientThread.request("notification", "huynhquangvinh01121999@gmail.com");
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_btnShareActionPerformed
 
-    private void jLabel13MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel13MouseClicked
-        ClientThread.sendMessage("hellllllllloooooo...................");
-    }//GEN-LAST:event_jLabel13MouseClicked
+    private void btntestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btntestActionPerformed
+        System.out.println("1");
+        ClientThread.request("test", "test");
+    }//GEN-LAST:event_btntestActionPerformed
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
@@ -1538,7 +1548,9 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel background;
     private javax.swing.JProgressBar bar_memories;
     private javax.swing.ButtonGroup btnGroup_Sex;
+    private javax.swing.JButton btnShare;
     private javax.swing.JButton btnSignIn_Anonymous;
+    private javax.swing.JButton btntest;
     private javax.swing.JCheckBox cbRemember;
     private javax.swing.JCheckBox cboRegis_FeMale;
     private javax.swing.JCheckBox cboRegis_Male;
@@ -1546,7 +1558,6 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;

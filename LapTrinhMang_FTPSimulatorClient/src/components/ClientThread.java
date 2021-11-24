@@ -28,7 +28,7 @@ import models.ObjectRequest;
  *
  * @author HUỲNH QUANG VINH
  */
-public class ClientThread{
+public class ClientThread {
 
     private static Socket socket;
     private static BufferedWriter out;
@@ -389,9 +389,15 @@ public class ClientThread{
                             if (result != null) {
                                 if (result.isSuccessed()) {
                                     HandleResult responseListData = (HandleResult) objInputStream.readObject();
+                                    HandleResult responseListDataShares = (HandleResult) objInputStream.readObject();
                                     ClientUI.responseDataAfterAuthen(result.getUser(),
-                                            result.getFolder(), responseListData.getListFolderChild(),
-                                            responseListData.getListFile());
+                                            result.getFolder(), 
+                                            responseListData.getListFolderChild(),
+                                            responseListData.getListFile(),
+                                            responseListDataShares.getListFileShareses(),
+                                            responseListDataShares.getListFolderShareses(),
+                                            responseListDataShares.getListPermissionses()
+                                    );
                                 }
                                 ClientUI.processHandler(result.isSuccessed(), result.getMessage());
                             }

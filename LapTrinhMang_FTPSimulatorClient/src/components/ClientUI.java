@@ -20,10 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import models.FileDownloadInfo;
-import models.Files;
-import models.Folders;
-import models.Users;
+import models.*;
 
 /**
  *
@@ -45,6 +42,9 @@ public class ClientUI extends javax.swing.JFrame {
     private static Folders folderSelected;
     private static List<Folders> listFolderChildInfo;
     private static List<Files> listFileInfo;
+    private static List<FileShares> listFileShareInfo;
+    private static List<FolderShares> listFolderShareInfo;
+    private static List<Permissions> listPermissionInfo;
 
     // email info
     private static String prexEmailInfo;
@@ -56,7 +56,7 @@ public class ClientUI extends javax.swing.JFrame {
 
     public ClientUI() {
         initComponents();
-        
+
         ClientThread.connect("localhost", 42000);
 
         setLocationRelativeTo(this);
@@ -114,6 +114,10 @@ public class ClientUI extends javax.swing.JFrame {
 
     public Users getUserInfo() {
         return userInfo;
+    }
+    
+    public List<Files> getListFileInfo() {
+        return listFileInfo;
     }
     // </editor-fold>  
 
@@ -185,6 +189,7 @@ public class ClientUI extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         btnShare = new javax.swing.JButton();
+        pnlShareWithMe = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
@@ -192,6 +197,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel24 = new javax.swing.JLabel();
         bar_memories = new javax.swing.JProgressBar();
         jLabel25 = new javax.swing.JLabel();
+        lblTotalNotification = new javax.swing.JLabel();
         background = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -664,8 +670,8 @@ public class ClientUI extends javax.swing.JFrame {
 
         btnShare.setBackground(new java.awt.Color(212, 255, 255));
         btnShare.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
-        btnShare.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-downloadfile-25.png"))); // NOI18N
-        btnShare.setText(" Download");
+        btnShare.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-share-23.png"))); // NOI18N
+        btnShare.setText(" Share");
         btnShare.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         btnShare.setBorderPainted(false);
         btnShare.addActionListener(new java.awt.event.ActionListener() {
@@ -677,6 +683,19 @@ public class ClientUI extends javax.swing.JFrame {
         btnShare.setBounds(640, 110, 130, 33);
 
         pnlSection.add(pnlMyCloud, "pnlMyCloud");
+
+        javax.swing.GroupLayout pnlShareWithMeLayout = new javax.swing.GroupLayout(pnlShareWithMe);
+        pnlShareWithMe.setLayout(pnlShareWithMeLayout);
+        pnlShareWithMeLayout.setHorizontalGroup(
+            pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 790, Short.MAX_VALUE)
+        );
+        pnlShareWithMeLayout.setVerticalGroup(
+            pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 440, Short.MAX_VALUE)
+        );
+
+        pnlSection.add(pnlShareWithMe, "card3");
 
         pnlMain.add(pnlSection);
         pnlSection.setBounds(310, 110, 790, 440);
@@ -741,6 +760,12 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel25.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pnlMain.add(jLabel25);
         jLabel25.setBounds(50, 418, 170, 30);
+
+        lblTotalNotification.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        lblTotalNotification.setForeground(new java.awt.Color(255, 0, 0));
+        lblTotalNotification.setText("1");
+        pnlMain.add(lblTotalNotification);
+        lblTotalNotification.setBounds(787, 45, 10, 14);
 
         background.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/background.png"))); // NOI18N
         background.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(51, 51, 51)));
@@ -1192,7 +1217,8 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSignIn_AnonymousActionPerformed
 
     private void btnShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShareActionPerformed
-        ClientThread.request("notification", "huynhquangvinh01121999@gmail.com");
+        SharePeople share = new SharePeople(this, rootPaneCheckingEnabled);
+        share.show();
     }//GEN-LAST:event_btnShareActionPerformed
 
     private void btntestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btntestActionPerformed
@@ -1228,13 +1254,18 @@ public class ClientUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Return data khi handle login">
     public static void responseDataAfterAuthen(Users user, Folders folder,
-            List<Folders> listFolderChild, List<Files> listFile) {
+            List<Folders> listFolderChild, List<Files> listFile,
+            List<FileShares> listFileShares, List<FolderShares> listFolderShares,
+            List<Permissions> listPermissions) {
         userInfo = user;
         folderInfo = folder;
         listFolderChildInfo = listFolderChild;
         listFileInfo = listFile;
+        listFileShareInfo = listFileShares;
+        listFolderShareInfo = listFolderShares;
+        listPermissionInfo = listPermissions;
     }
-    //</editor-fold>
+    // </editor-fold>
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Handle Sigin">
@@ -1245,6 +1276,9 @@ public class ClientUI extends javax.swing.JFrame {
         ClientThread.request("authenticate", user);
         //ClientThread.sendMessage("authenticate");    // bắn thông báo login
         //ClientThread.sendObjectUser(user);          // bắn thông tin user cho server để xử lý login
+
+//        Loading loading = new Loading(this, rootPaneCheckingEnabled);
+//        loading.show();
         while (processHandler) {
             System.out.println("watting handler authenticate...");
             // do not something...
@@ -1602,6 +1636,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblSignIn;
     private javax.swing.JLabel lblSignout;
     private javax.swing.JLabel lblTitlePath;
+    private javax.swing.JLabel lblTotalNotification;
     private javax.swing.JLabel lblUploadNewFile;
     private javax.swing.JLabel lblVerifyInfo;
     private javax.swing.JPanel pnlContainer;
@@ -1610,6 +1645,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JPanel pnlMyCloud;
     private javax.swing.JPanel pnlRegister;
     private javax.swing.JPanel pnlSection;
+    private javax.swing.JPanel pnlShareWithMe;
     private javax.swing.JTable tblMyFileCloud;
     private javax.swing.JTextField txtLoginEmail;
     private javax.swing.JPasswordField txtLoginPass;

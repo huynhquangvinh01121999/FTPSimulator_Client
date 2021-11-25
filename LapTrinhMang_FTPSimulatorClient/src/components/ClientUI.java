@@ -18,6 +18,7 @@ import java.util.*;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import models.*;
@@ -42,8 +43,8 @@ public class ClientUI extends javax.swing.JFrame {
     private static Folders folderSelected;
     private static List<Folders> listFolderChildInfo;
     private static List<Files> listFileInfo;
-    private static List<FileShares> listFileShareInfo;
-    private static List<FolderShares> listFolderShareInfo;
+    private static List<Files> listFileShareInfo;
+    private static List<Folders> listFolderShareInfo;
     private static List<Permissions> listPermissionInfo;
 
     // email info
@@ -53,6 +54,8 @@ public class ClientUI extends javax.swing.JFrame {
     private static String locationYourFolder = null;
 
     private DefaultTableModel tblMyFileCloudModel;
+    private DefaultTableModel tblFolderSharedModel;
+    private DefaultTableModel tblFileSharedModel;
 
     public ClientUI() {
         initComponents();
@@ -81,6 +84,20 @@ public class ClientUI extends javax.swing.JFrame {
         headerMyFileCloud.getColumnModel().getColumn(1).setPreferredWidth(50);
         headerMyFileCloud.getColumnModel().getColumn(2).setPreferredWidth(150);
         headerMyFileCloud.getColumnModel().getColumn(3).setPreferredWidth(50);
+
+        tblFolderSharedModel = (DefaultTableModel) tblFolderShared.getModel();
+        tblFolderSharedModel.setColumnIdentifiers(new Object[]{
+            "Folder Id", "Folder Name", "Ngày khởi tạo"
+        });
+
+        tblFileSharedModel = (DefaultTableModel) tblFileShared.getModel();
+        tblFileSharedModel.setColumnIdentifiers(new Object[]{
+            "File Id", "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng", "Kích cỡ tệp", "Đường dẫn"
+        });
+
+        hiddenColumnFirst(tblFolderShared);
+        hiddenColumnFirst(tblFileShared);
+        hiddenColumn(tblFileShared, 6);
     }
     // </editor-fold>  
 
@@ -102,6 +119,24 @@ public class ClientUI extends javax.swing.JFrame {
         });
     }
 
+    private void showDataMyFileShare() {
+        tblFolderSharedModel.setRowCount(0);
+        listFolderShareInfo.forEach((folder) -> {
+            tblFolderSharedModel.addRow(new Object[]{
+                folder.getFolderId(), folder.getFolderName(), folder.getCreateAt()
+            });
+        });
+
+        tblFileSharedModel.setRowCount(0);
+        listFileShareInfo.forEach((file) -> {
+            tblFileSharedModel.addRow(new Object[]{
+                file.getFileId(), file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
+                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                file.getSourcePath()
+            });
+        });
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="get values">
     public Folders getFolderInfo() {
@@ -115,9 +150,13 @@ public class ClientUI extends javax.swing.JFrame {
     public Users getUserInfo() {
         return userInfo;
     }
-    
+
     public List<Files> getListFileInfo() {
         return listFileInfo;
+    }
+
+    public List<Permissions> getListPermissionInfo() {
+        return listPermissionInfo;
     }
     // </editor-fold>  
 
@@ -190,6 +229,14 @@ public class ClientUI extends javax.swing.JFrame {
         jButton3 = new javax.swing.JButton();
         btnShare = new javax.swing.JButton();
         pnlShareWithMe = new javax.swing.JPanel();
+        lblTitlePath1 = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
+        jLabel27 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblFolderShared = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tblFileShared = new javax.swing.JTable();
+        jLabel29 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
@@ -684,18 +731,120 @@ public class ClientUI extends javax.swing.JFrame {
 
         pnlSection.add(pnlMyCloud, "pnlMyCloud");
 
+        pnlShareWithMe.setBackground(new java.awt.Color(255, 255, 255));
+
+        lblTitlePath1.setFont(new java.awt.Font("Verdana", 1, 24)); // NOI18N
+        lblTitlePath1.setForeground(new java.awt.Color(34, 92, 198));
+        lblTitlePath1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblTitlePath1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icons8-drop-down-20.png"))); // NOI18N
+        lblTitlePath1.setText("Share with me ");
+        lblTitlePath1.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
+        jButton4.setBackground(new java.awt.Color(212, 255, 255));
+        jButton4.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-downloadfile-25.png"))); // NOI18N
+        jButton4.setText(" Download");
+        jButton4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jButton4.setBorderPainted(false);
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jLabel27.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel27.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel27.setText("Folders Share:");
+
+        tblFolderShared.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        tblFolderShared.setForeground(new java.awt.Color(0, 0, 204));
+        tblFolderShared.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        tblFolderShared.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tblFolderShared.setGridColor(new java.awt.Color(255, 255, 255));
+        tblFolderShared.setRowHeight(30);
+        tblFolderShared.setSelectionBackground(new java.awt.Color(204, 204, 204));
+        tblFolderShared.setSelectionForeground(new java.awt.Color(0, 0, 153));
+        tblFolderShared.getTableHeader().setResizingAllowed(false);
+        jScrollPane2.setViewportView(tblFolderShared);
+
+        tblFileShared.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        tblFileShared.setForeground(new java.awt.Color(0, 0, 204));
+        tblFileShared.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        tblFileShared.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tblFileShared.setGridColor(new java.awt.Color(255, 255, 255));
+        tblFileShared.setRowHeight(30);
+        tblFileShared.setSelectionBackground(new java.awt.Color(204, 204, 204));
+        tblFileShared.setSelectionForeground(new java.awt.Color(0, 0, 153));
+        tblFileShared.getTableHeader().setResizingAllowed(false);
+        jScrollPane3.setViewportView(tblFileShared);
+
+        jLabel29.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel29.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel29.setText("Files Share:");
+
         javax.swing.GroupLayout pnlShareWithMeLayout = new javax.swing.GroupLayout(pnlShareWithMe);
         pnlShareWithMe.setLayout(pnlShareWithMeLayout);
         pnlShareWithMeLayout.setHorizontalGroup(
             pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 790, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlShareWithMeLayout.createSequentialGroup()
+                .addComponent(jLabel27, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(pnlShareWithMeLayout.createSequentialGroup()
+                        .addComponent(jLabel29, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 389, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addGroup(pnlShareWithMeLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblTitlePath1, javax.swing.GroupLayout.PREFERRED_SIZE, 547, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(233, Short.MAX_VALUE))
+            .addGroup(pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlShareWithMeLayout.createSequentialGroup()
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
         pnlShareWithMeLayout.setVerticalGroup(
             pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 440, Short.MAX_VALUE)
+            .addGroup(pnlShareWithMeLayout.createSequentialGroup()
+                .addGroup(pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlShareWithMeLayout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addComponent(lblTitlePath1)
+                        .addGap(75, 75, 75)
+                        .addGroup(pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel27, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel29, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlShareWithMeLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(16, 16, 16)))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(pnlShareWithMeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlShareWithMeLayout.createSequentialGroup()
+                    .addGap(0, 174, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 19, Short.MAX_VALUE)))
         );
 
-        pnlSection.add(pnlShareWithMe, "card3");
+        pnlSection.add(pnlShareWithMe, "pnlShareWithMe");
 
         pnlMain.add(pnlSection);
         pnlSection.setBounds(310, 110, 790, 440);
@@ -726,6 +875,11 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icons-share-25.png"))); // NOI18N
         jLabel15.setText("   Share with me");
         jLabel15.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel15.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel15MouseClicked(evt);
+            }
+        });
         pnlMain.add(jLabel15);
         jLabel15.setBounds(48, 260, 180, 40);
 
@@ -1226,6 +1380,41 @@ public class ClientUI extends javax.swing.JFrame {
         ClientThread.request("test", "test");
     }//GEN-LAST:event_btntestActionPerformed
 
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        int selectedRow = tblFileShared.getSelectedRow();
+        if (listFileShareInfo.size() == 0) {
+            Message("Không có file nào được chia sẻ cho bạn.!!!");
+        } else {
+            if (selectedRow == -1) {
+                Message("Vui lòng chọn 1 file để download.!!!");
+            } else {
+                String fileName = tblFileShared.getValueAt(selectedRow, 1).toString();
+                String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
+                        + "/Downloads/";
+                String destinationPath = tblFileShared.getValueAt(selectedRow, 6).toString();
+                FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+                fileDownloadInfo.setFileName(fileName);
+                fileDownloadInfo.setDestinationPath(desDownloadPath);
+                fileDownloadInfo.setSourceFilePath(destinationPath);
+
+                ClientThread.request("download_file", fileDownloadInfo);
+                Message("Tải file xuống thành công.!!!");
+            }
+        }
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
+        try {
+            showDataMyFileShare();
+        } catch (Exception ex) {
+            System.err.println("Xảy ra lỗi khi load data lên layout share with me" + ex);
+        }
+
+        // redirect view
+        repaint();
+        ClientThread.tranferLayout(pnlSection, "pnlShareWithMe");
+    }//GEN-LAST:event_jLabel15MouseClicked
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
     public static void processHandler(boolean status, String message) {
@@ -1255,7 +1444,7 @@ public class ClientUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Return data khi handle login">
     public static void responseDataAfterAuthen(Users user, Folders folder,
             List<Folders> listFolderChild, List<Files> listFile,
-            List<FileShares> listFileShares, List<FolderShares> listFolderShares,
+            List<Files> listFileShares, List<Folders> listFolderShares,
             List<Permissions> listPermissions) {
         userInfo = user;
         folderInfo = folder;
@@ -1384,6 +1573,21 @@ public class ClientUI extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(rootPane, message);
     }
     //</editor-fold>
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Ẩn cột đầu tiên của table">
+    private void hiddenColumnFirst(JTable table) {
+        table.getColumnModel().getColumn(0).setMinWidth(0);
+        table.getColumnModel().getColumn(0).setMaxWidth(0);
+        table.getColumnModel().getColumn(0).setWidth(0);
+    }
+
+    private void hiddenColumn(JTable table, int columnIndex) {
+        table.getColumnModel().getColumn(columnIndex).setMinWidth(0);
+        table.getColumnModel().getColumn(columnIndex).setMaxWidth(0);
+        table.getColumnModel().getColumn(columnIndex).setWidth(0);
+    }
+    // </editor-fold>
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Main Runable">
@@ -1592,6 +1796,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -1610,7 +1815,9 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1622,6 +1829,8 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -1636,6 +1845,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblSignIn;
     private javax.swing.JLabel lblSignout;
     private javax.swing.JLabel lblTitlePath;
+    private javax.swing.JLabel lblTitlePath1;
     private javax.swing.JLabel lblTotalNotification;
     private javax.swing.JLabel lblUploadNewFile;
     private javax.swing.JLabel lblVerifyInfo;
@@ -1646,6 +1856,8 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JPanel pnlRegister;
     private javax.swing.JPanel pnlSection;
     private javax.swing.JPanel pnlShareWithMe;
+    private javax.swing.JTable tblFileShared;
+    private javax.swing.JTable tblFolderShared;
     private javax.swing.JTable tblMyFileCloud;
     private javax.swing.JTextField txtLoginEmail;
     private javax.swing.JPasswordField txtLoginPass;

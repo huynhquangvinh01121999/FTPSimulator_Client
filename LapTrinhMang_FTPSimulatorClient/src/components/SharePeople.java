@@ -9,8 +9,10 @@ import features.FileExtensions;
 import java.awt.CardLayout;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import models.DataShare;
 import models.Files;
 import models.Folders;
 
@@ -23,9 +25,12 @@ public class SharePeople extends javax.swing.JDialog {
     private ClientUI index;
     private DefaultTableModel tblFileShareModel;
     private DefaultTableModel tblFolderShareModel;
-    
-    private static List<Files> listFileSelected;
-    private static List<Folders> listFolderSelected;
+
+    private static String selectedTypeShare = null;
+    private static List<String> listIdFileSelected = new ArrayList<>();
+    private static String folderIdSelected = null;
+    private static String permissionSelected = null;
+    private static String fromEmail = null;
 
     public SharePeople(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -35,9 +40,14 @@ public class SharePeople extends javax.swing.JDialog {
 
         index = (ClientUI) parent;
 
+        // set data
         setDataTable();
+        setDataPermission();
+        setFromEmail();
     }
 
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Cấu hình header table">
     private void setColumnIdentifiers() {
         tblFileShareModel = (DefaultTableModel) tblFileShare.getModel();
         tblFileShareModel.setColumnIdentifiers(new Object[]{
@@ -53,7 +63,10 @@ public class SharePeople extends javax.swing.JDialog {
         hiddenColumnFirst(tblFileShare);
         hiddenColumnFirst(tblFolderShare);
     }
+    // </editor-fold>
 
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Load data">
     private void setDataTable() {
         tblFileShareModel.setRowCount(0);
         List<Files> listFileShare = index.getListFileInfo();
@@ -76,6 +89,18 @@ public class SharePeople extends javax.swing.JDialog {
         });
     }
 
+    private void setDataPermission() {
+        cmbPermissions.removeAll();
+        index.getListPermissionInfo().forEach((item) -> {
+            cmbPermissions.addItem(item.getPermissionId().trim() + " | " + item.getPermissionName().trim());
+        });
+    }
+
+    private void setFromEmail() {
+        fromEmail = index.getUserInfo().getEmail().trim();
+    }
+    // </editor-fold>
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -84,23 +109,23 @@ public class SharePeople extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         cmbTypeShare = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        cmbPermissions = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jButton2 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        txtPeopleShares = new javax.swing.JTextArea();
+        btnCancel = new javax.swing.JButton();
+        btnShare = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         pnlShares = new javax.swing.JPanel();
         pnlShareFile = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblFileShare = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnUnSelectAllFile = new javax.swing.JButton();
+        btnUnSelectFile = new javax.swing.JButton();
+        btnSelectFile = new javax.swing.JButton();
         pnlShareFolder = new javax.swing.JPanel();
-        jButton7 = new javax.swing.JButton();
-        jButton8 = new javax.swing.JButton();
+        btnUnSelectFolder = new javax.swing.JButton();
+        btnSelectFolder = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         tblFolderShare = new javax.swing.JTable();
 
@@ -136,10 +161,15 @@ public class SharePeople extends javax.swing.JDialog {
         jPanel1.add(jLabel2);
         jLabel2.setBounds(700, 11, 80, 30);
 
-        jComboBox2.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jComboBox2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jPanel1.add(jComboBox2);
-        jComboBox2.setBounds(790, 11, 130, 30);
+        cmbPermissions.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        cmbPermissions.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        cmbPermissions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbPermissionsActionPerformed(evt);
+            }
+        });
+        jPanel1.add(cmbPermissions);
+        cmbPermissions.setBounds(790, 11, 130, 30);
 
         jLabel3.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -148,35 +178,40 @@ public class SharePeople extends javax.swing.JDialog {
         jPanel1.add(jLabel3);
         jLabel3.setBounds(10, 11, 82, 30);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jTextArea1.setRows(3);
-        jScrollPane2.setViewportView(jTextArea1);
+        txtPeopleShares.setColumns(20);
+        txtPeopleShares.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        txtPeopleShares.setRows(3);
+        jScrollPane2.setViewportView(txtPeopleShares);
 
         jPanel1.add(jScrollPane2);
         jScrollPane2.setBounds(380, 10, 280, 70);
 
-        jButton2.setBackground(new java.awt.Color(255, 0, 0));
-        jButton2.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
-        jButton2.setForeground(new java.awt.Color(255, 255, 255));
-        jButton2.setText("Cancel");
-        jButton2.setBorderPainted(false);
-        jButton2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnCancel.setBackground(new java.awt.Color(255, 0, 0));
+        btnCancel.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        btnCancel.setForeground(new java.awt.Color(255, 255, 255));
+        btnCancel.setText("Cancel");
+        btnCancel.setBorderPainted(false);
+        btnCancel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnCancelActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2);
-        jButton2.setBounds(365, 456, 100, 33);
+        jPanel1.add(btnCancel);
+        btnCancel.setBounds(365, 456, 100, 33);
 
-        jButton4.setBackground(new java.awt.Color(102, 204, 0));
-        jButton4.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
-        jButton4.setText("Share");
-        jButton4.setBorderPainted(false);
-        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jPanel1.add(jButton4);
-        jButton4.setBounds(490, 456, 100, 33);
+        btnShare.setBackground(new java.awt.Color(102, 204, 0));
+        btnShare.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        btnShare.setText("Share");
+        btnShare.setBorderPainted(false);
+        btnShare.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnShare.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShareActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnShare);
+        btnShare.setBounds(490, 456, 100, 33);
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(102, 102, 102));
@@ -199,28 +234,38 @@ public class SharePeople extends javax.swing.JDialog {
         tblFileShare.setRowHeight(30);
         jScrollPane1.setViewportView(tblFileShare);
 
-        jButton1.setBackground(new java.awt.Color(255, 255, 0));
-        jButton1.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jButton1.setText("Unselect all");
-        jButton1.setBorderPainted(false);
-        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-        jButton5.setBackground(new java.awt.Color(255, 255, 255));
-        jButton5.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-round-22.png"))); // NOI18N
-        jButton5.setText("Unselect");
-        jButton5.setBorderPainted(false);
-        jButton5.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-        jButton3.setBackground(new java.awt.Color(255, 255, 255));
-        jButton3.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-checked-22.png"))); // NOI18N
-        jButton3.setText("Select");
-        jButton3.setBorderPainted(false);
-        jButton3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        btnUnSelectAllFile.setBackground(new java.awt.Color(255, 255, 0));
+        btnUnSelectAllFile.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        btnUnSelectAllFile.setText("Unselect all");
+        btnUnSelectAllFile.setBorderPainted(false);
+        btnUnSelectAllFile.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUnSelectAllFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                btnUnSelectAllFileActionPerformed(evt);
+            }
+        });
+
+        btnUnSelectFile.setBackground(new java.awt.Color(255, 255, 255));
+        btnUnSelectFile.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        btnUnSelectFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-round-22.png"))); // NOI18N
+        btnUnSelectFile.setText("Unselect");
+        btnUnSelectFile.setBorderPainted(false);
+        btnUnSelectFile.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUnSelectFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUnSelectFileActionPerformed(evt);
+            }
+        });
+
+        btnSelectFile.setBackground(new java.awt.Color(255, 255, 255));
+        btnSelectFile.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        btnSelectFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-checked-22.png"))); // NOI18N
+        btnSelectFile.setText("Select");
+        btnSelectFile.setBorderPainted(false);
+        btnSelectFile.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSelectFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSelectFileActionPerformed(evt);
             }
         });
 
@@ -235,11 +280,11 @@ public class SharePeople extends javax.swing.JDialog {
                     .addGroup(pnlShareFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(pnlShareFileLayout.createSequentialGroup()
                             .addGap(577, 577, 577)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnUnSelectAllFile, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(14, 14, 14)
-                            .addComponent(jButton5)
+                            .addComponent(btnUnSelectFile)
                             .addGap(10, 10, 10)
-                            .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnSelectFile, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 920, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
@@ -250,9 +295,9 @@ public class SharePeople extends javax.swing.JDialog {
                 .addGroup(pnlShareFileLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
                     .addGroup(pnlShareFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnUnSelectAllFile, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnUnSelectFile, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnSelectFile, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(18, 18, 18)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(0, 0, Short.MAX_VALUE)))
@@ -262,19 +307,23 @@ public class SharePeople extends javax.swing.JDialog {
 
         pnlShareFolder.setBackground(new java.awt.Color(255, 255, 255));
 
-        jButton7.setBackground(new java.awt.Color(255, 255, 255));
-        jButton7.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-round-22.png"))); // NOI18N
-        jButton7.setText("Unselect");
-        jButton7.setBorderPainted(false);
-        jButton7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUnSelectFolder.setBackground(new java.awt.Color(255, 255, 0));
+        btnUnSelectFolder.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        btnUnSelectFolder.setText("Unselect all");
+        btnUnSelectFolder.setBorderPainted(false);
+        btnUnSelectFolder.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
-        jButton8.setBackground(new java.awt.Color(255, 255, 255));
-        jButton8.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jButton8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-checked-22.png"))); // NOI18N
-        jButton8.setText("Select");
-        jButton8.setBorderPainted(false);
-        jButton8.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSelectFolder.setBackground(new java.awt.Color(255, 255, 255));
+        btnSelectFolder.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        btnSelectFolder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-checked-22.png"))); // NOI18N
+        btnSelectFolder.setText("Select");
+        btnSelectFolder.setBorderPainted(false);
+        btnSelectFolder.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSelectFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSelectFolderActionPerformed(evt);
+            }
+        });
 
         tblFolderShare.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -298,9 +347,9 @@ public class SharePeople extends javax.swing.JDialog {
                     .addGroup(pnlShareFolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(pnlShareFolderLayout.createSequentialGroup()
                             .addGap(701, 701, 701)
-                            .addComponent(jButton7)
-                            .addGap(10, 10, 10)
-                            .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnUnSelectFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(btnSelectFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 920, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
@@ -311,8 +360,8 @@ public class SharePeople extends javax.swing.JDialog {
                 .addGroup(pnlShareFolderLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
                     .addGroup(pnlShareFolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnUnSelectFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnSelectFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(18, 18, 18)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(0, 0, Short.MAX_VALUE)))
@@ -342,14 +391,18 @@ public class SharePeople extends javax.swing.JDialog {
     private void cmbTypeShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTypeShareActionPerformed
         try {
             if (cmbTypeShare.getSelectedItem().toString() != null) {
-                switch (cmbTypeShare.getSelectedItem().toString()) {
+                String selected = cmbTypeShare.getSelectedItem().toString();
+                switch (selected) {
                     case "File":
+                        selectedTypeShare = selected;
                         tranferLayout("pnlShareFile");
                         break;
                     case "Folder":
+                        selectedTypeShare = selected;
                         tranferLayout("pnlShareFolder");
                         break;
                     default:
+                        selectedTypeShare = "file";
                         tranferLayout("pnlShareFile");
                         break;
                 }
@@ -359,27 +412,159 @@ public class SharePeople extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_cmbTypeShareActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         this.dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void btnSelectFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectFileActionPerformed
         int selectedRow = tblFileShare.getSelectedRow();
-        String id = tblFileShareModel.getValueAt(selectedRow, 0).toString();
-        System.out.println(id);
-    }//GEN-LAST:event_jButton3ActionPerformed
+        if (selectedRow != -1) {
+            // Lấy ra fileId
+            String fileId = tblFileShareModel.getValueAt(selectedRow, 0).toString();
+            if (AddToListIdFileSelected(fileId)) {
+                Message("Đã chọn chia sẻ file này.!!!");
+            } else {
+                Message("File này đã được chọn rồi.!!!");
+            }
+            return;
+        }
+        Message("Vui lòng chọn file cần chia sẻ.!!!");
+    }//GEN-LAST:event_btnSelectFileActionPerformed
 
+    private void cmbPermissionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbPermissionsActionPerformed
+        try {
+            if (cmbPermissions.getSelectedItem().toString() != null) {
+                permissionSelected = cmbPermissions.getSelectedItem().toString();
+            }
+        } catch (Exception ex) {
+            System.err.println("permissionSelected nạp lấy lần đầu s bị null" + ex);
+        }
+    }//GEN-LAST:event_cmbPermissionsActionPerformed
+
+    private void btnUnSelectAllFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUnSelectAllFileActionPerformed
+        listIdFileSelected.removeAll(listIdFileSelected);
+        Message("Đã hủy chọn toàn bộ file.!!!");
+    }//GEN-LAST:event_btnUnSelectAllFileActionPerformed
+
+    private void btnUnSelectFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUnSelectFileActionPerformed
+        int selectedRow = tblFileShare.getSelectedRow();
+        if (selectedRow != -1) {
+            // Lấy ra fileId
+            String fileId = tblFileShareModel.getValueAt(selectedRow, 0).toString();
+            if (RemoveFromListIdFileSelected(fileId)) {
+                Message("Đã hủy chia sẻ file này.!!!");
+            } else {
+                Message("File này chưa được chọn nên làm gì có mà hủy.!!!");
+            }
+            return;
+        }
+        Message("Vui lòng chọn file cần hủy chia sẻ.!!!");
+    }//GEN-LAST:event_btnUnSelectFileActionPerformed
+
+    private void btnShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShareActionPerformed
+
+        if (selectedTypeShare != null) {
+            String peopleShares = txtPeopleShares.getText();
+            if (peopleShares.trim().equals("")) {
+                Message("Vui lòng nhập email người dùng cần chia sẻ.!!!");
+                return;
+            } else {
+                // tạo 1 list chứ email người đc chia sẻ
+                List<String> listPeopleShare = new ArrayList<>();
+                // tách mảng và add vào list email ng đc chia sẻ
+
+                for (String item : peopleShares.split(";")) {
+                    listPeopleShare.add(item);
+                }
+                permissionSelected = permissionSelected.split("|")[0].trim();
+                switch (selectedTypeShare) {
+                    case "File": {
+                        if (listIdFileSelected.size() > 0) {
+                            DataShare dataShare = new DataShare(listIdFileSelected, listPeopleShare, permissionSelected, fromEmail);
+                            ClientThread.request("share_files", dataShare);
+                            Message("Chia sẻ file thành công.!!!");
+                            this.dispose();
+                        } else {
+                            Message("Vui lòng chọn file cần chia sẻ.!!!");
+                        }
+                        break;
+                    }
+                    case "Folder": {
+                        if (folderIdSelected != null) {
+                            DataShare dataShare = new DataShare(folderIdSelected, listPeopleShare, permissionSelected, fromEmail);
+                            ClientThread.request("share_folder", dataShare);
+                            Message("Chia sẻ thư mục thành công.!!!");
+                            this.dispose();
+                        } else {
+                            Message("Vui lòng chọn folder cần chia sẻ.!!!");
+                        }
+                        break;
+                    }
+                }
+            }
+        } else {
+            Message("Vui lòng chọn loại hình cần chia sẻ.!!!");
+        }
+    }//GEN-LAST:event_btnShareActionPerformed
+
+    private void btnSelectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectFolderActionPerformed
+        int selectedRow = tblFolderShare.getSelectedRow();
+        if (selectedRow != -1) {
+            // Lấy ra fileId
+            String folderId = tblFolderShareModel.getValueAt(selectedRow, 0).toString().trim();
+            folderIdSelected = folderId;
+            Message("Đã chọn chia sẻ folder này.!!!");
+            return;
+        }
+        Message("Vui lòng chọn folder cần chia sẻ.!!!");
+    }//GEN-LAST:event_btnSelectFolderActionPerformed
+
+    private boolean AddToListIdFileSelected(String fileId) {
+        for (String id : listIdFileSelected) {
+            if (fileId.trim().equals(id.trim())) {
+                return false;
+            }
+        }
+        listIdFileSelected.add(fileId);
+        return true;
+    }
+
+    private boolean RemoveFromListIdFileSelected(String fileId) {
+        for (String id : listIdFileSelected) {
+            if (fileId.trim().equals(id.trim())) {
+                listIdFileSelected.remove(id);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="chuyển đổi layout">
     private void tranferLayout(String panelName) {
         CardLayout layout = (CardLayout) pnlShares.getLayout();
         layout.show(pnlShares, panelName);
     }
+    // </editor-fold>
 
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Ẩn cột đầu tiên của table">
     private void hiddenColumnFirst(JTable table) {
         table.getColumnModel().getColumn(0).setMinWidth(0);
         table.getColumnModel().getColumn(0).setMaxWidth(0);
         table.getColumnModel().getColumn(0).setWidth(0);
     }
+    // </editor-fold>
 
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Hiển thị thông báo">
+    private void Message(String message) {
+        JOptionPane.showMessageDialog(rootPane, message);
+    }
+    // </editor-fold>
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Main">
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -418,17 +603,18 @@ public class SharePeople extends javax.swing.JDialog {
             }
         });
     }
+    // </editor-fold>
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnSelectFile;
+    private javax.swing.JButton btnSelectFolder;
+    private javax.swing.JButton btnShare;
+    private javax.swing.JButton btnUnSelectAllFile;
+    private javax.swing.JButton btnUnSelectFile;
+    private javax.swing.JButton btnUnSelectFolder;
+    private javax.swing.JComboBox<String> cmbPermissions;
     private javax.swing.JComboBox<String> cmbTypeShare;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
-    private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -437,11 +623,11 @@ public class SharePeople extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel pnlShareFile;
     private javax.swing.JPanel pnlShareFolder;
     private javax.swing.JPanel pnlShares;
     private javax.swing.JTable tblFileShare;
     private javax.swing.JTable tblFolderShare;
+    private javax.swing.JTextArea txtPeopleShares;
     // End of variables declaration//GEN-END:variables
 }

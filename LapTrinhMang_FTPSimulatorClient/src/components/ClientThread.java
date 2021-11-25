@@ -391,7 +391,7 @@ public class ClientThread {
                                     HandleResult responseListData = (HandleResult) objInputStream.readObject();
                                     HandleResult responseListDataShares = (HandleResult) objInputStream.readObject();
                                     ClientUI.responseDataAfterAuthen(result.getUser(),
-                                            result.getFolder(), 
+                                            result.getFolder(),
                                             responseListData.getListFolderChild(),
                                             responseListData.getListFile(),
                                             responseListDataShares.getListFileShareses(),
@@ -407,10 +407,16 @@ public class ClientThread {
                         }
                         break;
 
-                    case "RESPONSE_NOTIFICATION":
+                    case "RESPONSE_NOTIFICATION": {
                         String test = (String) response.getObject();
                         System.out.println(test);
                         break;
+                    }
+                    case "NOTIFI_SHAREDDATA": {
+                        String notifi = (String) response.getObject();
+                        System.out.println(notifi);
+                        break;
+                    }
                     default:
                         System.out.println("Server said: " + message);
                         break;

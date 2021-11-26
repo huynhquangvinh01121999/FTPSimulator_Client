@@ -43,12 +43,17 @@ public class ClientUI extends javax.swing.JFrame {
     private static Folders folderSelected;
     private static List<Folders> listFolderChildInfo;
     private static List<Files> listFileInfo;
+    private static List<FileShares> listFileSharedInfo;
+    private static List<FolderShares> listFolderSharedInfo;
     private static List<Files> listFileShareInfo;
     private static List<Folders> listFolderShareInfo;
     private static List<Permissions> listPermissionInfo;
 
     // email info
     private static String prexEmailInfo;
+
+    // chế độ upload file
+    private static boolean IS_UPLOAD_SHARE_WITH_ME = false;
 
     // location my folder on server
     private static String locationYourFolder = null;
@@ -87,17 +92,22 @@ public class ClientUI extends javax.swing.JFrame {
 
         tblFolderSharedModel = (DefaultTableModel) tblFolderShared.getModel();
         tblFolderSharedModel.setColumnIdentifiers(new Object[]{
-            "Folder Id", "Folder Name", "Ngày khởi tạo"
+            "Folder Id", "Folder Name", "Ngày khởi tạo", "Đường dẫn folder", "Chủ sở hữu", "Quyền"
         });
+        hiddenColumnFirst(tblFolderShared);
+        hiddenColumn(tblFolderShared, 3);
+        hiddenColumn(tblFolderShared, 4);
+        hiddenColumn(tblFolderShared, 5);
 
         tblFileSharedModel = (DefaultTableModel) tblFileShared.getModel();
         tblFileSharedModel.setColumnIdentifiers(new Object[]{
-            "File Id", "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng", "Kích cỡ tệp", "Đường dẫn"
+            "File Id", "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng",
+            "Kích cỡ tệp", "Đường dẫn", "Quyền"
         });
 
-        hiddenColumnFirst(tblFolderShared);
         hiddenColumnFirst(tblFileShared);
         hiddenColumn(tblFileShared, 6);
+        hiddenColumn(tblFileShared, 7);
     }
     // </editor-fold>  
 
@@ -106,7 +116,7 @@ public class ClientUI extends javax.swing.JFrame {
         tblMyFileCloudModel.setRowCount(0);
         listFileInfo.forEach((file) -> {
             tblMyFileCloudModel.addRow(new Object[]{
-                file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
+                file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
                 FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
             });
         });
@@ -122,18 +132,32 @@ public class ClientUI extends javax.swing.JFrame {
     private void showDataMyFileShare() {
         tblFolderSharedModel.setRowCount(0);
         listFolderShareInfo.forEach((folder) -> {
-            tblFolderSharedModel.addRow(new Object[]{
-                folder.getFolderId(), folder.getFolderName(), folder.getCreateAt()
-            });
+            for (FolderShares folderShares : listFolderSharedInfo) {
+                if (folderShares.getFolderId().trim().equals(folder.getFolderId().trim())) {
+                    tblFolderSharedModel.addRow(new Object[]{
+                        folder.getFolderId(), folder.getFolderName(), folder.getCreateAt(),
+                        folder.getFolderPath(),
+                        folder.getEmail(),
+                        folderShares.getPermissionId()
+                    });
+                    break;
+                }
+            }
+
         });
 
         tblFileSharedModel.setRowCount(0);
         listFileShareInfo.forEach((file) -> {
-            tblFileSharedModel.addRow(new Object[]{
-                file.getFileId(), file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
-                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                file.getSourcePath()
-            });
+            for (FileShares fileShares : listFileSharedInfo) {
+                if (fileShares.getFileId().trim().equals(file.getFileId().trim())) {
+                    tblFileSharedModel.addRow(new Object[]{
+                        file.getFileId(), file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
+                        FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                        file.getSourcePath(),
+                        fileShares.getPermissionId()
+                    });
+                }
+            }
         });
     }
 
@@ -772,6 +796,11 @@ public class ClientUI extends javax.swing.JFrame {
         tblFolderShared.setSelectionBackground(new java.awt.Color(204, 204, 204));
         tblFolderShared.setSelectionForeground(new java.awt.Color(0, 0, 153));
         tblFolderShared.getTableHeader().setResizingAllowed(false);
+        tblFolderShared.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblFolderSharedMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(tblFolderShared);
 
         tblFileShared.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
@@ -988,9 +1017,23 @@ public class ClientUI extends javax.swing.JFrame {
             ClientThread.tranferLayout(pnlContainer, "pnlLogin");
             userInfo = null;
             folderInfo = null;
-            listFileInfo = null;
+            folderSelected = null;
             listFolderChildInfo = null;
+            listFileInfo = null;
+            listFileShareInfo = null;
+            listFolderChildInfo = null;
+            listFolderShareInfo = null;
+            listPermissionInfo = null;
             locationYourFolder = null;
+
+            jLabel15.setVisible(true);
+            jLabel24.setVisible(true);
+            jLabel28.setVisible(true);
+            jButton2.setVisible(true);
+            cmbFolderChild.setVisible(true);
+            jButton1.setVisible(true);
+            btnShare.setVisible(true);
+
             lblTitlePath.setText("My Cloud ");
             setDefaultProcessHandler();
             setVerifyCode(0);
@@ -1025,37 +1068,37 @@ public class ClientUI extends javax.swing.JFrame {
                 isVerify = true;    // set giá trị thành đã check
             }
         } else {
-//            if (txtVerifyCode.getText().trim().equals(String.valueOf(verifyCode).trim())) {
-//                if (cboRegis_Male.isSelected()) {
-//                    user.setSex("Male");
-//                } else {
-//                    user.setSex("FeMale");
-//                }
-//                user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
-//                user.setStatus("unblock");
-//                user.setCreateAt(DateHelper.Now());
-//                ClientThread.request("register", user);
-////                ClientThread.sendMessage("register");
-////                ClientThread.sendObjectUser(user);
-//                while (processHandler) {
-//                    System.out.println("watting handler register...");
-//                    // do not something...
-//                }
-//                Message(messageResult);
-//                if (statusResult) {     // result ok
-//                    repaint();
-//                    ClientThread.tranferLayout(pnlContainer, "pnlLogin");
-//                    txtRegis_Email.setText("");
-//                    txtRegis_Pass.setText("");
-//                    txtRegis_FullName.setText("");
-//                    isVerify = false;
-//                    verifyCode = 0;
-//                    lblVerifyInfo.setVisible(false);
-//                    txtVerifyCode.setVisible(false);
-//                }
-//            } else {
-//                Message("Mã xác thực không chính xác.!!!");
-//            }
+            if (txtVerifyCode.getText().trim().equals(String.valueOf(verifyCode).trim())) {
+                if (cboRegis_Male.isSelected()) {
+                    user.setSex("Male");
+                } else {
+                    user.setSex("FeMale");
+                }
+                user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
+                user.setStatus("unblock");
+                user.setCreateAt(DateHelper.Now());
+                ClientThread.request("register", user);
+//                ClientThread.sendMessage("register");
+//                ClientThread.sendObjectUser(user);
+                while (processHandler) {
+                    System.out.println("watting handler register...");
+                    // do not something...
+                }
+                Message(messageResult);
+                if (statusResult) {     // result ok
+                    repaint();
+                    ClientThread.tranferLayout(pnlContainer, "pnlLogin");
+                    txtRegis_Email.setText("");
+                    txtRegis_Pass.setText("");
+                    txtRegis_FullName.setText("");
+                    isVerify = false;
+                    verifyCode = 0;
+                    lblVerifyInfo.setVisible(false);
+                    txtVerifyCode.setVisible(false);
+                }
+            } else {
+                Message("Mã xác thực không chính xác.!!!");
+            }
         }
         setDefaultProcessHandler();
     }//GEN-LAST:event_lblRegisterMouseClicked
@@ -1074,105 +1117,11 @@ public class ClientUI extends javax.swing.JFrame {
 
     private void lblUploadNewFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblUploadNewFileMouseClicked
 
-        File file = FileExtensions.getFileChooser();    // open dialog and chọn file
-
-        if (file != null) {
-            // kiểm tra kích thước file
-            if (FileHandler.compareFileSize(file, userInfo.getFileSizeUpload().trim())) {
-
-                // quyền anonymous
-                if (userInfo.getEmail().trim().equals("anonymous")) {
-
-                    @SuppressWarnings("unchecked")
-                    // <editor-fold defaultstate="collapsed" desc="Upload file với quyền anonymous">
-                    Files fileInfo = new Files();
-                    fileInfo.setFileId(ThreadRandoms.uuid());
-                    fileInfo.setFileName(FileExtensions.getFileName(file));
-                    fileInfo.setSourcePath(locationYourFolder);
-                    fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
-                    fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
-                    fileInfo.setStatus("show");
-                    fileInfo.setFolderId(folderSelected.getFolderId());
-                    fileInfo.setUploadAt(DateHelper.Now());
-                    fileInfo.setPrexEmail(prexEmailInfo);
-
-                    ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
-
-                    try {
-                        boolean checkLoop = false;
-                        for (Files item : listFileInfo) {
-                            if (item.getFileName().equals(fileInfo.getFileName())) {
-                                item.setFileSize(fileInfo.getFileSize());
-                                item.setFileExtension(fileInfo.getFileExtension());
-                                item.setUploadAt(fileInfo.getUploadAt());
-                                checkLoop = true;
-                                break;
-                            }
-                        }
-                        if (!checkLoop) {
-                            listFileInfo.add(fileInfo);
-                        }
-                    } catch (Exception ex) {
-                        System.err.println("Xảy ra lỗi khi add thông tin file vào list - " + ex);
-                    }
-
-                    try {
-                        // set up table show list file of user
-                        tblMyFileCloudModel.setRowCount(0);
-                        listFileInfo.forEach((item) -> {
-                            tblMyFileCloudModel.addRow(new Object[]{
-                                item.getFileName(), "tôi", item.getUploadAt(), item.getFileExtension(),
-                                FileExtensions.convertSizeFromSizeString(item.getFileSize(), "MB") + " MB"
-                            });
-                        });
-                    } catch (Exception ex) {
-                        System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
-                    }
-
-                    Message("Tải file lên thành công.!!!");
-                    return;
-                    //</editor-fold>
-
-                } else {
-
-                    // <editor-fold defaultstate="collapsed" desc="Upload file với quyền user">
-                    // kiểm tra dung lượng folder còn đủ ko
-                    if (isHaveEnoughSizeFolder(folderInfo.getRemainingSize(),
-                            String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())))) {
-                        Files fileInfo = new Files();
-                        fileInfo.setFileId(ThreadRandoms.uuid());
-                        fileInfo.setFileName(FileExtensions.getFileName(file));
-                        fileInfo.setSourcePath(locationYourFolder);
-                        fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
-                        fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
-                        fileInfo.setStatus("show");
-                        fileInfo.setFolderId(folderSelected.getFolderId());
-                        fileInfo.setUploadAt(DateHelper.Now());
-                        fileInfo.setPrexEmail(prexEmailInfo);
-
-                        ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
-
-//                    ClientThread.request("upload_file", fileInfo);
-//                    try {
-//                        Thread.sleep(3000);
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(ClientUI.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                    ClientThread.requestFileSender(file, locationYourFolder);
-//                    ClientThread.sendMessage("upload_file");
-//                    ClientThread.FileSender(fileInfo, file, locationYourFolder);
-                        // check file name exist
-                        checkFileNameExist(fileInfo);
-                        showDataMyFileCloud();
-                        Message("Tải file lên thành công.!!!");
-                        return;
-                    }
-                    Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
-                    return;
-                    // </editor-fold>
-                }
-            }
-            Message("Kích thước file upload tối đa 100MB.!!!");
+        // upload to my cloud
+        if (!IS_UPLOAD_SHARE_WITH_ME) {
+            handleUploadFile();
+        } else {
+            handleUploadFileToFolderShare();
         }
     }//GEN-LAST:event_lblUploadNewFileMouseClicked
 
@@ -1245,6 +1194,7 @@ public class ClientUI extends javax.swing.JFrame {
         prexEmailInfo = userInfo.getEmail().split("@")[0];
         try {
             showDataMyFileCloud();
+            IS_UPLOAD_SHARE_WITH_ME = false;
         } catch (Exception ex) {
             System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
         }
@@ -1297,37 +1247,45 @@ public class ClientUI extends javax.swing.JFrame {
         } catch (Exception ex) {
             System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
         }
+        ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
     }//GEN-LAST:event_jLabel24MouseClicked
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        int selectedRow = tblMyFileCloud.getSelectedRow();
-        if (listFileInfo.size() == 0) {
-            Message("Không có file nào trên cloud của bạn.!!!");
-        } else {
-            if (selectedRow == -1) {
-                Message("Vui lòng chọn 1 file để download.!!!");
-            } else {
-                boolean checkSourcePath = false;
-                String fileName = tblMyFileCloud.getValueAt(selectedRow, 0).toString();
-                String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
-                        + "/Downloads/";
-                FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-                fileDownloadInfo.setFileName(fileName);
-                fileDownloadInfo.setDestinationPath(desDownloadPath);
 
-                // kiểm tra có tồn tại file ko, dựa vào tên file đc chọn
-                for (Files file : listFileInfo) {
-                    if (file.getFileName().trim().equals(fileName.trim())) {
-                        fileDownloadInfo.setSourceFilePath(file.getSourcePath());
-                        checkSourcePath = true;
+        // check user có đc quyền download ko???
+        if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
+                || userInfo.getPermissionId().trim().toLowerCase().equals("d")) {
+            int selectedRow = tblMyFileCloud.getSelectedRow();
+            if (listFileInfo.isEmpty()) {
+                Message("Không có file nào trên cloud của bạn.!!!");
+            } else {
+                if (selectedRow == -1) {
+                    Message("Vui lòng chọn 1 file để download.!!!");
+                } else {
+                    boolean checkSourcePath = false;
+                    String fileName = tblMyFileCloud.getValueAt(selectedRow, 0).toString();
+                    String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
+                            + "/Downloads/";
+                    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+                    fileDownloadInfo.setFileName(fileName);
+                    fileDownloadInfo.setDestinationPath(desDownloadPath);
+
+                    // kiểm tra có tồn tại file ko, dựa vào tên file đc chọn
+                    for (Files file : listFileInfo) {
+                        if (file.getFileName().trim().equals(fileName.trim())) {
+                            fileDownloadInfo.setSourceFilePath(file.getSourcePath());
+                            checkSourcePath = true;
+                        }
                     }
+                    if (checkSourcePath) {
+                        ClientThread.request("download_file", fileDownloadInfo);
+                        return;
+                    }
+                    Message("File không tồn tại hoặc đã bị xóa.!!!");
                 }
-                if (checkSourcePath) {
-                    ClientThread.request("download_file", fileDownloadInfo);
-                    return;
-                }
-                Message("File không tồn tại hoặc đã bị xóa.!!!");
             }
+        } else {
+            Message("Chức năng download của bạn đã bị chặn.!!!");
         }
 
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -1362,6 +1320,14 @@ public class ClientUI extends javax.swing.JFrame {
             folderSelected = folderInfo;
             prexEmailInfo = "anonymous";
 
+            jLabel15.setVisible(false);
+            jLabel24.setVisible(false);
+            jLabel28.setVisible(false);
+            jButton2.setVisible(false);
+            cmbFolderChild.setVisible(false);
+            jButton1.setVisible(false);
+            btnShare.setVisible(false);
+            lblTitlePath.setText("Public Cloud ");
             // redirect view
             repaint();
             ClientThread.tranferLayout(pnlContainer, "pnlMain");
@@ -1382,30 +1348,37 @@ public class ClientUI extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         int selectedRow = tblFileShared.getSelectedRow();
-        if (listFileShareInfo.size() == 0) {
-            Message("Không có file nào được chia sẻ cho bạn.!!!");
-        } else {
-            if (selectedRow == -1) {
-                Message("Vui lòng chọn 1 file để download.!!!");
+        String permission = tblFileShared.getValueAt(selectedRow, 7).toString();
+        if (permission.trim().equals("d") || permission.trim().equals("all")) {
+            if (listFileShareInfo.size() == 0) {
+                Message("Không có file nào được chia sẻ cho bạn.!!!");
             } else {
-                String fileName = tblFileShared.getValueAt(selectedRow, 1).toString();
-                String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
-                        + "/Downloads/";
-                String destinationPath = tblFileShared.getValueAt(selectedRow, 6).toString();
-                FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-                fileDownloadInfo.setFileName(fileName);
-                fileDownloadInfo.setDestinationPath(desDownloadPath);
-                fileDownloadInfo.setSourceFilePath(destinationPath);
+                if (selectedRow == -1) {
+                    Message("Vui lòng chọn 1 file để download.!!!");
+                } else {
+                    String fileName = tblFileShared.getValueAt(selectedRow, 1).toString();
+                    String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
+                            + "/Downloads/";
+                    String destinationPath = tblFileShared.getValueAt(selectedRow, 6).toString();
+                    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+                    fileDownloadInfo.setFileName(fileName);
+                    fileDownloadInfo.setDestinationPath(desDownloadPath);
+                    fileDownloadInfo.setSourceFilePath(destinationPath);
 
-                ClientThread.request("download_file", fileDownloadInfo);
-                Message("Tải file xuống thành công.!!!");
+                    ClientThread.request("download_file", fileDownloadInfo);
+                    Message("Tải file xuống thành công.!!!");
+                }
             }
+        } else {
+            Message("Bạn không có quyền tải xuống thư mục này.!!!");
         }
+
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
         try {
             showDataMyFileShare();
+            IS_UPLOAD_SHARE_WITH_ME = true;
         } catch (Exception ex) {
             System.err.println("Xảy ra lỗi khi load data lên layout share with me" + ex);
         }
@@ -1414,6 +1387,11 @@ public class ClientUI extends javax.swing.JFrame {
         repaint();
         ClientThread.tranferLayout(pnlSection, "pnlShareWithMe");
     }//GEN-LAST:event_jLabel15MouseClicked
+
+    private void tblFolderSharedMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblFolderSharedMouseClicked
+        int selectedRow = tblFolderShared.getSelectedRow();
+        locationYourFolder = tblFolderShared.getValueAt(selectedRow, 3).toString();
+    }//GEN-LAST:event_tblFolderSharedMouseClicked
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
@@ -1444,15 +1422,25 @@ public class ClientUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Return data khi handle login">
     public static void responseDataAfterAuthen(Users user, Folders folder,
             List<Folders> listFolderChild, List<Files> listFile,
+            List<FileShares> listFileShared, List<FolderShares> listFolderShared,
             List<Files> listFileShares, List<Folders> listFolderShares,
             List<Permissions> listPermissions) {
         userInfo = user;
         folderInfo = folder;
         listFolderChildInfo = listFolderChild;
         listFileInfo = listFile;
+        listFileSharedInfo = listFileShared;
+        listFolderSharedInfo = listFolderShared;
         listFileShareInfo = listFileShares;
         listFolderShareInfo = listFolderShares;
         listPermissionInfo = listPermissions;
+    }
+
+    public static void responseDataAfterAuthen_Anonymous(Users user, Folders folder,
+            List<Files> listFile) {
+        userInfo = user;
+        folderInfo = folder;
+        listFileInfo = listFile;
     }
     // </editor-fold>
 
@@ -1550,6 +1538,197 @@ public class ClientUI extends javax.swing.JFrame {
                 + (Integer.parseInt(totalSize) / (1024 * 1024 * 1024)) + "GB");
         bar_memories.setValue(Integer.parseInt(totalSize) - remainingSizeFolderConvert);
         listFileInfo.add(fileInfo);
+    }
+    //</editor-fold>
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="handleUploadFile">
+    private void handleUploadFile() {
+        // check user có đc quyền upload ko???
+        if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
+                || userInfo.getPermissionId().trim().toLowerCase().equals("u")) {   // TH có
+            File file = FileExtensions.getFileChooser();    // open dialog and chọn file
+
+            if (file != null) {
+                // kiểm tra kích thước file
+                if (FileHandler.compareFileSize(file, userInfo.getFileSizeUpload().trim())) {
+
+                    // quyền anonymous
+                    if (userInfo.getEmail().trim().equals("anonymous")) {
+
+                        @SuppressWarnings("unchecked")
+                        // <editor-fold defaultstate="collapsed" desc="Upload file với quyền anonymous">
+                        Files fileInfo = new Files();
+                        fileInfo.setFileId(ThreadRandoms.uuid());
+                        fileInfo.setFileName(FileExtensions.getFileName(file));
+                        fileInfo.setSourcePath(locationYourFolder);
+                        fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
+                        fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
+                        fileInfo.setStatus("show");
+                        fileInfo.setFolderId(folderSelected.getFolderId());
+                        fileInfo.setUploadAt(DateHelper.Now());
+                        fileInfo.setPrexEmail(prexEmailInfo);
+
+                        ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
+
+                        try {
+                            boolean checkLoop = false;
+                            for (Files item : listFileInfo) {
+                                if (item.getFileName().equals(fileInfo.getFileName())) {
+                                    item.setFileSize(fileInfo.getFileSize());
+                                    item.setFileExtension(fileInfo.getFileExtension());
+                                    item.setUploadAt(fileInfo.getUploadAt());
+                                    checkLoop = true;
+                                    break;
+                                }
+                            }
+                            if (!checkLoop) {
+                                listFileInfo.add(fileInfo);
+                            }
+                        } catch (Exception ex) {
+                            System.err.println("Xảy ra lỗi khi add thông tin file vào list - " + ex);
+                        }
+
+                        try {
+                            // set up table show list file of user
+                            tblMyFileCloudModel.setRowCount(0);
+                            listFileInfo.forEach((item) -> {
+                                tblMyFileCloudModel.addRow(new Object[]{
+                                    item.getFileName(), "tôi", item.getUploadAt(), item.getFileExtension(),
+                                    FileExtensions.convertSizeFromSizeString(item.getFileSize(), "MB") + " MB"
+                                });
+                            });
+                        } catch (Exception ex) {
+                            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+                        }
+
+                        Message("Tải file lên thành công.!!!");
+                        return;
+                        //</editor-fold>
+
+                    } else {
+
+                        // <editor-fold defaultstate="collapsed" desc="Upload file với quyền user">
+                        // kiểm tra dung lượng folder còn đủ ko
+                        if (isHaveEnoughSizeFolder(folderInfo.getRemainingSize(),
+                                String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())))) {
+                            Files fileInfo = new Files();
+                            fileInfo.setFileId(ThreadRandoms.uuid());
+                            fileInfo.setFileName(FileExtensions.getFileName(file));
+                            fileInfo.setSourcePath(locationYourFolder);
+                            fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
+                            fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
+                            fileInfo.setStatus("show");
+                            fileInfo.setFolderId(folderSelected.getFolderId());
+                            fileInfo.setUploadAt(DateHelper.Now());
+                            fileInfo.setPrexEmail(prexEmailInfo);
+
+                            ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
+
+//                    ClientThread.request("upload_file", fileInfo);
+//                    try {
+//                        Thread.sleep(3000);
+//                    } catch (InterruptedException ex) {
+//                        Logger.getLogger(ClientUI.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    ClientThread.requestFileSender(file, locationYourFolder);
+//                    ClientThread.sendMessage("upload_file");
+//                    ClientThread.FileSender(fileInfo, file, locationYourFolder);
+                            // check file name exist
+                            checkFileNameExist(fileInfo);
+                            showDataMyFileCloud();
+                            Message("Tải file lên thành công.!!!");
+                            return;
+                        }
+                        Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
+                        return;
+                        // </editor-fold>
+                    }
+                }
+                Message("Kích thước file upload tối đa"
+                        + Integer.parseInt(userInfo.getFileSizeUpload().replaceAll(",", "")) / (1024 * 1024)
+                        + "MB.!!!");
+            }
+        } else {
+            Message("Chức năng upload file của bạn đã bị chặn.!!!");
+        }
+    }
+    //</editor-fold>
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="handleUploadFileToFolderShare">
+    private void handleUploadFileToFolderShare() {
+
+        int selectedRow = tblFolderShared.getSelectedRow();
+        String permission = tblFolderShared.getValueAt(selectedRow, 5).toString();
+
+        // check có quyền upload vào folder đc share này k
+        if (permission.trim().equals("all") || permission.trim().equals("u")) {   // có
+            // check user có đc quyền upload ko???
+            if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
+                    || userInfo.getPermissionId().trim().toLowerCase().equals("u")) {   // TH có
+                File file = FileExtensions.getFileChooser();    // open dialog and chọn file
+
+                if (file != null) {
+                    // kiểm tra kích thước file
+                    if (FileHandler.compareFileSize(file, userInfo.getFileSizeUpload().trim())) {
+                        // <editor-fold defaultstate="collapsed" desc="Upload file vô folder share với quyền user">
+                        // kiểm tra dung lượng folder còn đủ ko
+                        if (isHaveEnoughSizeFolder(folderInfo.getRemainingSize(),
+                                String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())))) {
+                            Files fileInfo = new Files();
+                            fileInfo.setFileId(ThreadRandoms.uuid());
+                            fileInfo.setFileName(FileExtensions.getFileName(file));
+                            fileInfo.setSourcePath(locationYourFolder);
+                            fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
+                            fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
+                            fileInfo.setStatus("show");
+
+                            // get folderId share need upload
+                            String folderId = tblFolderShared.getValueAt(selectedRow, 0).toString();
+                            String emailParent = tblFolderShared.getValueAt(selectedRow, 4).toString();
+                            // PrexEmail  : abc@gmail.com
+                            // EmailShare : abc@gmail.com
+                            fileInfo.setFolderId(folderId);
+                            fileInfo.setUploadAt(DateHelper.Now());
+                            fileInfo.setPrexEmail(emailParent.split("@")[0]);
+                            fileInfo.setEmailShare(userInfo.getEmail());
+
+                            ClientThread.requestFileSender("upload_file_share", fileInfo, file, locationYourFolder);
+
+                            // check file name exist
+                            boolean isExist = false;
+                            for (Files item : listFileShareInfo) {
+                                if (item.getFileName().equals(fileInfo.getFileName())
+                                        && item.getSourcePath().trim().equals(fileInfo.getSourcePath().trim())) {
+                                    item.setFileSize(fileInfo.getFileSize());
+                                    item.setFileExtension(fileInfo.getFileExtension());
+                                    item.setUploadAt(fileInfo.getUploadAt());
+                                    isExist = true;
+                                    break;
+                                }
+                            }
+                            if (!isExist) {
+                                listFileShareInfo.add(fileInfo);
+                            }
+                            showDataMyFileShare();
+                            Message("Tải file lên thành công.!!!");
+                            return;
+                        }
+                        Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
+                        return;
+                        // </editor-fold>
+                    }
+                    Message("Kích thước file upload tối đa"
+                            + Integer.parseInt(userInfo.getFileSizeUpload().replaceAll(",", "")) / (1024 * 1024)
+                            + "MB.!!!");
+                }
+            } else {
+                Message("Chức năng upload file của bạn đã bị chặn.!!!");
+            }
+        } else {
+            Message("Bạn không có quyền upload file vào thư mục chia sẻ này.!!!");
+        }
     }
     //</editor-fold>
 

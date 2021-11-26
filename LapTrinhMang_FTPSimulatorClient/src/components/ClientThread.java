@@ -59,7 +59,6 @@ public class ClientThread {
             };
             Thread thread = new Thread(runnable);
             thread.start();
-            System.out.println("ok");
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -381,7 +380,8 @@ public class ClientThread {
                         }
                         break;
                     }
-                    case "RESPONSE_AUTHENTICATE":
+
+                    case "RESPONSE_AUTHENTICATE": {
                         System.out.println("Server said: " + message);
                         try {
 //                            HandleResult result = (HandleResult) objInputStream.readObject();
@@ -394,6 +394,8 @@ public class ClientThread {
                                             result.getFolder(),
                                             responseListData.getListFolderChild(),
                                             responseListData.getListFile(),
+                                            responseListDataShares.getListFileShared(),
+                                            responseListDataShares.getListFolderShared(),
                                             responseListDataShares.getListFileShareses(),
                                             responseListDataShares.getListFolderShareses(),
                                             responseListDataShares.getListPermissionses()
@@ -406,6 +408,28 @@ public class ClientThread {
                             ClientUI.processHandler(false, "Vui lòng đăng nhập lại");
                         }
                         break;
+                    }
+
+                    case "RESPONSE_AUTHENTICATE_ANONYMOUS": {
+                        System.out.println("Server said: " + message);
+                        try {
+//                            HandleResult result = (HandleResult) objInputStream.readObject();
+                            HandleResult result = (HandleResult) response.getObject();
+                            if (result != null) {
+                                if (result.isSuccessed()) {
+                                    HandleResult responseListData = (HandleResult) objInputStream.readObject();
+                                    ClientUI.responseDataAfterAuthen_Anonymous(result.getUser(),
+                                            result.getFolder(),
+                                            responseListData.getListFile());
+                                }
+                                ClientUI.processHandler(result.isSuccessed(), result.getMessage());
+                            }
+                        } catch (ClassNotFoundException ex) {
+                            System.err.println("Xảy ra lỗi khi RESPONSE_AUTHENTICATE - " + ex);
+                            ClientUI.processHandler(false, "Vui lòng đăng nhập lại");
+                        }
+                        break;
+                    }
 
                     case "RESPONSE_NOTIFICATION": {
                         String test = (String) response.getObject();

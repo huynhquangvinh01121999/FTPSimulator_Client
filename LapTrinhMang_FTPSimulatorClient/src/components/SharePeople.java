@@ -41,9 +41,9 @@ public class SharePeople extends javax.swing.JDialog {
         index = (ClientUI) parent;
 
         // set data
+        setFromEmail();
         setDataTable();
         setDataPermission();
-        setFromEmail();
     }
 
     @SuppressWarnings("unchecked")
@@ -71,11 +71,13 @@ public class SharePeople extends javax.swing.JDialog {
         tblFileShareModel.setRowCount(0);
         List<Files> listFileShare = index.getListFileInfo();
         listFileShare.forEach((file) -> {
-            tblFileShareModel.addRow(new Object[]{
-                file.getFileId(), file.getFileName(),
-                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                file.getFileExtension()
-            });
+            if (!file.getPrexEmail().trim().equals("anonymous")) {
+                tblFileShareModel.addRow(new Object[]{
+                    file.getFileId(), file.getFileName(),
+                    FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                    file.getFileExtension()
+                });
+            }
         });
 
         tblFolderShareModel.setRowCount(0);
@@ -83,9 +85,11 @@ public class SharePeople extends javax.swing.JDialog {
         listFolderShare.add(index.getFolderInfo());
         listFolderShare.addAll(index.getListFolderChildInfo());
         listFolderShare.forEach((folder) -> {
-            tblFolderShareModel.addRow(new Object[]{
-                folder.getFolderId(), folder.getFolderName(), folder.getCreateAt()
-            });
+            if (!folder.getFolderName().trim().equals(fromEmail.split("@")[0])) {
+                tblFolderShareModel.addRow(new Object[]{
+                    folder.getFolderId(), folder.getFolderName(), folder.getCreateAt()
+                });
+            }
         });
     }
 

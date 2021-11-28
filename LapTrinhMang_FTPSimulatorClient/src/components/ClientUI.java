@@ -5,7 +5,6 @@ import features.Encryptions;
 import features.FileExtensions;
 import features.ThreadRandoms;
 import handlers.FileHandler;
-import handlers.Handler;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -48,6 +47,9 @@ public class ClientUI extends javax.swing.JFrame {
     private static List<Files> listFileShareInfo;
     private static List<Folders> listFolderShareInfo;
     private static List<Permissions> listPermissionInfo;
+    
+    // list notification
+    public static List<String> notifications = new ArrayList<>();
 
     // email info
     private static String prexEmailInfo;
@@ -160,7 +162,7 @@ public class ClientUI extends javax.swing.JFrame {
             }
         });
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="get values">
     public Folders getFolderInfo() {
@@ -181,6 +183,10 @@ public class ClientUI extends javax.swing.JFrame {
 
     public List<Permissions> getListPermissionInfo() {
         return listPermissionInfo;
+    }
+    
+    public List<String> getListNotification(){
+        return notifications;
     }
     // </editor-fold>  
 
@@ -635,6 +641,11 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-notification-25.png"))); // NOI18N
         jLabel8.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel8.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel8MouseClicked(evt);
+            }
+        });
         pnlMain.add(jLabel8);
         jLabel8.setBounds(760, 50, 40, 30);
 
@@ -946,7 +957,7 @@ public class ClientUI extends javax.swing.JFrame {
 
         lblTotalNotification.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         lblTotalNotification.setForeground(new java.awt.Color(255, 0, 0));
-        lblTotalNotification.setText("1");
+        lblTotalNotification.setText("0");
         pnlMain.add(lblTotalNotification);
         lblTotalNotification.setBounds(787, 45, 10, 14);
 
@@ -1393,6 +1404,12 @@ public class ClientUI extends javax.swing.JFrame {
         locationYourFolder = tblFolderShared.getValueAt(selectedRow, 3).toString();
     }//GEN-LAST:event_tblFolderSharedMouseClicked
 
+    private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
+        Notification notifi = new Notification(this, rootPaneCheckingEnabled);
+        notifi.show();
+        loadCountNewNotification(0);
+    }//GEN-LAST:event_jLabel8MouseClicked
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
     public static void processHandler(boolean status, String message) {
@@ -1747,7 +1764,14 @@ public class ClientUI extends javax.swing.JFrame {
     //</editor-fold>
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Hiển thị thông báo">
+    // <editor-fold defaultstate="collapsed" desc="Load số lượng thông báo mới">
+    public static void loadCountNewNotification(int sum){
+        lblTotalNotification.setText(String.valueOf(sum));
+    }
+    //</editor-fold>
+    
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Hiển thị modal thông báo">
     private void Message(String message) {
         JOptionPane.showMessageDialog(rootPane, message);
     }
@@ -2025,7 +2049,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblSignout;
     private javax.swing.JLabel lblTitlePath;
     private javax.swing.JLabel lblTitlePath1;
-    private javax.swing.JLabel lblTotalNotification;
+    private static javax.swing.JLabel lblTotalNotification;
     private javax.swing.JLabel lblUploadNewFile;
     private javax.swing.JLabel lblVerifyInfo;
     private javax.swing.JPanel pnlContainer;

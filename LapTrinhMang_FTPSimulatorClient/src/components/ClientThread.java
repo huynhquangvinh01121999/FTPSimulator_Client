@@ -438,6 +438,8 @@ public class ClientThread {
                     }
                     case "NOTIFI_SHAREDDATA": {
                         String notifi = (String) response.getObject();
+                        ClientUI.notifications.add(notifi);
+                        ClientUI.loadCountNewNotification(ClientUI.notifications.size());
                         System.out.println(notifi);
                         break;
                     }

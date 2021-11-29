@@ -37,7 +37,7 @@ public class ClientUI extends javax.swing.JFrame {
     private static int verifyCode;
 
     // return info when after login
-    private static Users userInfo;
+    public static Users userInfo;
     private static Folders folderInfo;
     private static Folders folderSelected;
     private static List<Folders> listFolderChildInfo;
@@ -47,10 +47,11 @@ public class ClientUI extends javax.swing.JFrame {
     private static List<Files> listFileShareInfo;
     private static List<Folders> listFolderShareInfo;
     private static List<Permissions> listPermissionInfo;
-    
+
     // list notification
     public static List<String> notifications = new ArrayList<>();
-
+    public static int TOTAL_NOTIFICATIONS = 0;
+    
     // email info
     private static String prexEmailInfo;
 
@@ -83,8 +84,9 @@ public class ClientUI extends javax.swing.JFrame {
 
         tblMyFileCloudModel = (DefaultTableModel) tblMyFileCloud.getModel();
         tblMyFileCloudModel.setColumnIdentifiers(new Object[]{
-            "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng", "Kích cỡ tệp"
+            "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng", "Kích cỡ tệp", "Kích cỡ đầy đủ"
         });
+        hiddenColumn(tblMyFileCloud, 5);
 
         JTableHeader headerMyFileCloud = tblMyFileCloud.getTableHeader();
         headerMyFileCloud.getColumnModel().getColumn(0).setPreferredWidth(250);
@@ -113,13 +115,17 @@ public class ClientUI extends javax.swing.JFrame {
     }
     // </editor-fold>  
 
+     @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="load data model">
     private void showDataMyFileCloud() {
         // set up table show list file of user
         tblMyFileCloudModel.setRowCount(0);
         listFileInfo.forEach((file) -> {
             tblMyFileCloudModel.addRow(new Object[]{
-                file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
-                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
+                file.getFileName().trim(), file.getPrexEmail().trim(), 
+                file.getUploadAt().trim(), file.getFileExtension().trim(),
+                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                file.getFileSize().trim()
             });
         });
 
@@ -162,7 +168,8 @@ public class ClientUI extends javax.swing.JFrame {
             }
         });
     }
-    
+    // </editor-fold>  
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="get values">
     public Folders getFolderInfo() {
@@ -184,8 +191,8 @@ public class ClientUI extends javax.swing.JFrame {
     public List<Permissions> getListPermissionInfo() {
         return listPermissionInfo;
     }
-    
-    public List<String> getListNotification(){
+
+    public List<String> getListNotification() {
         return notifications;
     }
     // </editor-fold>  
@@ -384,7 +391,8 @@ public class ClientUI extends javax.swing.JFrame {
 
         btnSignIn_Anonymous.setBackground(new java.awt.Color(0, 0, 0));
         btnSignIn_Anonymous.setForeground(new java.awt.Color(204, 204, 204));
-        btnSignIn_Anonymous.setText("Sign in with anonymous permisson");
+        btnSignIn_Anonymous.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-anonymous-19.png"))); // NOI18N
+        btnSignIn_Anonymous.setText(" Sign in with anonymous permisson");
         btnSignIn_Anonymous.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         btnSignIn_Anonymous.setBorderPainted(false);
         btnSignIn_Anonymous.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -394,7 +402,7 @@ public class ClientUI extends javax.swing.JFrame {
             }
         });
         jPanel1.add(btnSignIn_Anonymous);
-        btnSignIn_Anonymous.setBounds(100, 465, 210, 30);
+        btnSignIn_Anonymous.setBounds(86, 465, 240, 30);
 
         btntest.setText("test");
         btntest.addActionListener(new java.awt.event.ActionListener() {
@@ -1273,26 +1281,34 @@ public class ClientUI extends javax.swing.JFrame {
                 if (selectedRow == -1) {
                     Message("Vui lòng chọn 1 file để download.!!!");
                 } else {
-                    boolean checkSourcePath = false;
-                    String fileName = tblMyFileCloud.getValueAt(selectedRow, 0).toString();
-                    String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
-                            + "/Downloads/";
-                    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-                    fileDownloadInfo.setFileName(fileName);
-                    fileDownloadInfo.setDestinationPath(desDownloadPath);
+                    String fileSize = tblMyFileCloud.getValueAt(selectedRow, 5).toString();
+                    if (Long.parseLong(fileSize) <= Long.parseLong(userInfo.getFileSizeDownload().trim())) {
+                        boolean checkSourcePath = false;
+                        String fileName = tblMyFileCloud.getValueAt(selectedRow, 0).toString();
+                        String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
+                                + "/Downloads/";
+                        FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+                        fileDownloadInfo.setFileName(fileName);
+                        fileDownloadInfo.setDestinationPath(desDownloadPath);
 
-                    // kiểm tra có tồn tại file ko, dựa vào tên file đc chọn
-                    for (Files file : listFileInfo) {
-                        if (file.getFileName().trim().equals(fileName.trim())) {
-                            fileDownloadInfo.setSourceFilePath(file.getSourcePath());
-                            checkSourcePath = true;
+                        // kiểm tra có tồn tại file ko, dựa vào tên file đc chọn
+                        for (Files file : listFileInfo) {
+                            if (file.getFileName().trim().equals(fileName.trim())) {
+                                fileDownloadInfo.setSourceFilePath(file.getSourcePath());
+                                checkSourcePath = true;
+                            }
                         }
+                        if (checkSourcePath) {
+                            ClientThread.request("download_file", fileDownloadInfo);
+                            return;
+                        } else {
+                            Message("File không tồn tại hoặc đã bị xóa.!!!");
+                        }
+                    } else {
+                        Message("Kích thước file download không được vượt quá "
+                                + Integer.parseInt(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) / (1024 * 1024)
+                                + "MB.!!!");
                     }
-                    if (checkSourcePath) {
-                        ClientThread.request("download_file", fileDownloadInfo);
-                        return;
-                    }
-                    Message("File không tồn tại hoặc đã bị xóa.!!!");
                 }
             }
         } else {
@@ -1408,6 +1424,7 @@ public class ClientUI extends javax.swing.JFrame {
         Notification notifi = new Notification(this, rootPaneCheckingEnabled);
         notifi.show();
         loadCountNewNotification(0);
+        TOTAL_NOTIFICATIONS = 0;
     }//GEN-LAST:event_jLabel8MouseClicked
 
     @SuppressWarnings("unchecked")
@@ -1663,11 +1680,13 @@ public class ClientUI extends javax.swing.JFrame {
                     }
                 }
                 Message("Kích thước file upload tối đa"
-                        + Integer.parseInt(userInfo.getFileSizeUpload().replaceAll(",", "")) / (1024 * 1024)
+                        + Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / (1024 * 1024)
                         + "MB.!!!");
+                return;
             }
         } else {
             Message("Chức năng upload file của bạn đã bị chặn.!!!");
+            return;
         }
     }
     //</editor-fold>
@@ -1737,7 +1756,7 @@ public class ClientUI extends javax.swing.JFrame {
                         // </editor-fold>
                     }
                     Message("Kích thước file upload tối đa"
-                            + Integer.parseInt(userInfo.getFileSizeUpload().replaceAll(",", "")) / (1024 * 1024)
+                            + Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / (1024 * 1024)
                             + "MB.!!!");
                 }
             } else {
@@ -1765,11 +1784,11 @@ public class ClientUI extends javax.swing.JFrame {
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Load số lượng thông báo mới">
-    public static void loadCountNewNotification(int sum){
+    public static void loadCountNewNotification(int sum) {
         lblTotalNotification.setText(String.valueOf(sum));
     }
     //</editor-fold>
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Hiển thị modal thông báo">
     private void Message(String message) {
@@ -2049,7 +2068,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblSignout;
     private javax.swing.JLabel lblTitlePath;
     private javax.swing.JLabel lblTitlePath1;
-    private static javax.swing.JLabel lblTotalNotification;
+    public static javax.swing.JLabel lblTotalNotification;
     private javax.swing.JLabel lblUploadNewFile;
     private javax.swing.JLabel lblVerifyInfo;
     private javax.swing.JPanel pnlContainer;

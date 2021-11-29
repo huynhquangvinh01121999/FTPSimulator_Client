@@ -430,17 +430,37 @@ public class ClientThread {
                         }
                         break;
                     }
+                    case "NOTIFI_SHAREDDATA": {
+                        String notifi = (String) response.getObject();
+                        ClientUI.notifications.add(notifi);
+                        ++ClientUI.TOTAL_NOTIFICATIONS;
+                        Thread.sleep(2000);
+                        ClientUI.loadCountNewNotification(ClientUI.TOTAL_NOTIFICATIONS);
+                        break;
+                    }
 
-                    case "RESPONSE_NOTIFICATION": {
+                    case "UPDATE_LOCK_UNLOCK_FEATURES_FILE": {
+                        String data = (String) response.getObject();
+                        String perId = data.split(";")[0];
+                        String notifi = data.split(";")[1];
+                        ClientUI.userInfo.setPermissionId(perId);
+                        ClientUI.notifications.add(notifi);
+                        ++ClientUI.TOTAL_NOTIFICATIONS;
+                        Thread.sleep(2000);
+                        ClientUI.loadCountNewNotification(ClientUI.TOTAL_NOTIFICATIONS);
+                        break;
+                    }
+
+                    //______________________________ TEST _______________________________________
+                    case "TEST_FROM_SERVERUI": {
                         String test = (String) response.getObject();
                         System.out.println(test);
                         break;
                     }
-                    case "NOTIFI_SHAREDDATA": {
-                        String notifi = (String) response.getObject();
-                        ClientUI.notifications.add(notifi);
-                        ClientUI.loadCountNewNotification(ClientUI.notifications.size());
-                        System.out.println(notifi);
+
+                    case "RESPONSE_NOTIFICATION": {
+                        String test = (String) response.getObject();
+                        System.out.println(test);
                         break;
                     }
                     default:
@@ -452,7 +472,7 @@ public class ClientThread {
             in.close();
             out.close();
             socket.close();
-            Thread.sleep(3000); // ngủ 3s sau đó chấm dứt chương trình
+            Thread.sleep(2000); // ngủ 2s sau đó chấm dứt chương trình
             System.exit(0);
         } catch (InterruptedException ex) {
             System.err.println("Client đã xảy ra lỗi InterruptedException - " + ex);

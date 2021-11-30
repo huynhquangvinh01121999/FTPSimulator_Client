@@ -40,7 +40,7 @@ public class Notification extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setLocation(new java.awt.Point(500, 200));
+        setLocation(new java.awt.Point(383, 190));
         setUndecorated(true);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));

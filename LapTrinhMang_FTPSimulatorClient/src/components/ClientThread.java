@@ -346,17 +346,25 @@ public class ClientThread {
                 }
                 String message = response.getMessage();
                 switch (message.toUpperCase()) {
+                    
+                    // <editor-fold defaultstate="collapsed" desc="SERVER CHO PHÉP DOWNLOAD FILE">
                     case "ACCEPT_DOWNLOAD_FILE": {
                         System.out.println("Server trả lời mày là: " + message);
                         FileEvent fileEvent = (FileEvent) response.getObject();
                         saveFile(fileEvent);
                         break;
                     }
+                    // </editor-fold>
+                    
+                    // <editor-fold defaultstate="collapsed" desc="SERVER CHO PHÉP DISCONNECT">
                     case "ACCCEP_DISCONNECT": {
                         System.out.println("Server said: " + message);
                         System.err.println("Disconnecting...");
                         break;
                     }
+                    // </editor-fold>
+                    
+                    // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KIỂM TRA ĐĂNG KÝ - ĐÍNH KÈM MÃ KÍCH HOẠT">
                     case "RESPONSE_VERIFY_REGISTER": {
                         System.out.println("Server said: " + message);
 
@@ -371,6 +379,9 @@ public class ClientThread {
                         }
                         break;
                     }
+                    // </editor-fold>
+                    
+                    // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KẾT QUẢ ĐĂNG KÝ THÀNH CÔNG/THẤT BẠI">
                     case "RESPONSE_REGISTER": {
                         System.out.println("Server said: " + message);
                         //HandleResult result = (HandleResult) objInputStream.readObject();
@@ -380,7 +391,9 @@ public class ClientThread {
                         }
                         break;
                     }
+                    // </editor-fold>
 
+                    // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KẾT QUẢ ĐĂNG NHẬP USER THÀNH CÔNG/THẤT BẠI">
                     case "RESPONSE_AUTHENTICATE": {
                         System.out.println("Server said: " + message);
                         try {
@@ -409,7 +422,9 @@ public class ClientThread {
                         }
                         break;
                     }
+                    // </editor-fold>
 
+                    // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KẾT QUẢ ĐĂNG NHẬP VỚI QUYỀN ANONYMOUS">
                     case "RESPONSE_AUTHENTICATE_ANONYMOUS": {
                         System.out.println("Server said: " + message);
                         try {
@@ -430,6 +445,9 @@ public class ClientThread {
                         }
                         break;
                     }
+                    // </editor-fold>
+                    
+                    // <editor-fold defaultstate="collapsed" desc="SERVER GỬI THÔNG BÁO CÓ CLIENT VỪA SHARE FILE/FOLDER">
                     case "NOTIFI_SHAREDDATA": {
                         String notifi = (String) response.getObject();
                         ClientUI.notifications.add(notifi);
@@ -438,8 +456,10 @@ public class ClientThread {
                         ClientUI.loadCountNewNotification(ClientUI.TOTAL_NOTIFICATIONS);
                         break;
                     }
+                    // </editor-fold>
 
-                    case "UPDATE_LOCK_UNLOCK_FEATURES_FILE": {
+                    // <editor-fold defaultstate="collapsed" desc="SERVER GỬI THÔNG BÁO KHÓA/MỞ KHÓA CHỨC NĂNG UPLOAD CỦA USER">
+                    case "UPDATE_LOCK_UNLOCK_FEATURES": {
                         String data = (String) response.getObject();
                         String perId = data.split(";")[0];
                         String notifi = data.split(";")[1];
@@ -450,6 +470,45 @@ public class ClientThread {
                         ClientUI.loadCountNewNotification(ClientUI.TOTAL_NOTIFICATIONS);
                         break;
                     }
+                    // </editor-fold>
+                    
+                    // <editor-fold defaultstate="collapsed" desc="SERVER KHÓA/MỞ KHÓA QUYỀN TRUY CẬP ANONYMOUS CỦA CLIENT THEO PORT">
+                    case "UPDATE_CLIENT_ANONYMOUS_PERMISSION": {
+                        boolean permission = (boolean) response.getObject();
+                        ClientUI.ANONYMOUS_PERMISSION = permission;
+                        break;
+                    }
+                    // </editor-fold>
+
+                    // <editor-fold defaultstate="collapsed" desc="SERVER KHÓA QUYỀN TRUY CẬP ANONYMOUS CỦA USER THEO EMAIL">
+                    case "LOCK_USER_ANONYMOUS_PERMISSION": {
+                        String data = (String) response.getObject();
+                        String permission = data.split(";")[0];
+                        String notifi = data.split(";")[1];
+                        ClientUI.userInfo.setAnonymousPermission(permission);
+                        ClientUI.notifications.add(notifi);
+                        ClientUI.jLabel24.setVisible(false);
+                        ++ClientUI.TOTAL_NOTIFICATIONS;
+                        Thread.sleep(2000);
+                        ClientUI.loadCountNewNotification(ClientUI.TOTAL_NOTIFICATIONS);
+                        break;
+                    }
+                    // </editor-fold>
+
+                    // <editor-fold defaultstate="collapsed" desc="SERVER MỞ KHÓA QUYỀN TRUY CẬP ANONYMOUS CỦA USER THEO EMAIL">
+                    case "UNLOCK_USER_ANONYMOUS_PERMISSION": {
+                        String data = (String) response.getObject();
+                        String permission = data.split(";")[0];
+                        String notifi = data.split(";")[1];
+                        ClientUI.userInfo.setAnonymousPermission(permission);
+                        ClientUI.notifications.add(notifi);
+                        ClientUI.jLabel24.setVisible(true);
+                        ++ClientUI.TOTAL_NOTIFICATIONS;
+                        Thread.sleep(2000);
+                        ClientUI.loadCountNewNotification(ClientUI.TOTAL_NOTIFICATIONS);
+                        break;
+                    }
+                    // </editor-fold>
 
                     //______________________________ TEST _______________________________________
                     case "TEST_FROM_SERVERUI": {

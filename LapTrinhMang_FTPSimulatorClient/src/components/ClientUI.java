@@ -27,7 +27,7 @@ import models.*;
  * @author HUỲNH QUANG VINH
  */
 public class ClientUI extends javax.swing.JFrame {
-
+    
     private static boolean processHandler = true;
     private static boolean statusResult = false;
     private static String messageResult = "";
@@ -51,49 +51,52 @@ public class ClientUI extends javax.swing.JFrame {
     // list notification
     public static List<String> notifications = new ArrayList<>();
     public static int TOTAL_NOTIFICATIONS = 0;
-    
+
     // email info
     private static String prexEmailInfo;
 
     // chế độ upload file
     private static boolean IS_UPLOAD_SHARE_WITH_ME = false;
 
+    // chế độ ANONYMOUS
+    public static boolean ANONYMOUS_PERMISSION = true;
+
     // location my folder on server
     private static String locationYourFolder = null;
-
+    
     private DefaultTableModel tblMyFileCloudModel;
     private DefaultTableModel tblFolderSharedModel;
     private DefaultTableModel tblFileSharedModel;
-
+    
     public ClientUI() {
         initComponents();
-
+        
         ClientThread.connect("localhost", 42000);
-
+        
         setLocationRelativeTo(this);
         this.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
         pnlLogin.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
         pnlRegister.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
-
+        
         setColumnTableModel();
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="set up header table model">
     private void setColumnTableModel() {
-
+        
         tblMyFileCloudModel = (DefaultTableModel) tblMyFileCloud.getModel();
         tblMyFileCloudModel.setColumnIdentifiers(new Object[]{
             "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng", "Kích cỡ tệp", "Kích cỡ đầy đủ"
         });
         hiddenColumn(tblMyFileCloud, 5);
-
+        
         JTableHeader headerMyFileCloud = tblMyFileCloud.getTableHeader();
         headerMyFileCloud.getColumnModel().getColumn(0).setPreferredWidth(250);
         headerMyFileCloud.getColumnModel().getColumn(1).setPreferredWidth(50);
         headerMyFileCloud.getColumnModel().getColumn(2).setPreferredWidth(150);
         headerMyFileCloud.getColumnModel().getColumn(3).setPreferredWidth(50);
-
+        
         tblFolderSharedModel = (DefaultTableModel) tblFolderShared.getModel();
         tblFolderSharedModel.setColumnIdentifiers(new Object[]{
             "Folder Id", "Folder Name", "Ngày khởi tạo", "Đường dẫn folder", "Chủ sở hữu", "Quyền"
@@ -102,27 +105,27 @@ public class ClientUI extends javax.swing.JFrame {
         hiddenColumn(tblFolderShared, 3);
         hiddenColumn(tblFolderShared, 4);
         hiddenColumn(tblFolderShared, 5);
-
+        
         tblFileSharedModel = (DefaultTableModel) tblFileShared.getModel();
         tblFileSharedModel.setColumnIdentifiers(new Object[]{
             "File Id", "Tên file", "Chủ sở hữu", "Sửa đổi lần cuối", "Định dạng",
             "Kích cỡ tệp", "Đường dẫn", "Quyền"
         });
-
+        
         hiddenColumnFirst(tblFileShared);
         hiddenColumn(tblFileShared, 6);
         hiddenColumn(tblFileShared, 7);
     }
     // </editor-fold>  
 
-     @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="load data model">
     private void showDataMyFileCloud() {
         // set up table show list file of user
         tblMyFileCloudModel.setRowCount(0);
         listFileInfo.forEach((file) -> {
             tblMyFileCloudModel.addRow(new Object[]{
-                file.getFileName().trim(), file.getPrexEmail().trim(), 
+                file.getFileName().trim(), file.getPrexEmail().trim(),
                 file.getUploadAt().trim(), file.getFileExtension().trim(),
                 FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
                 file.getFileSize().trim()
@@ -136,7 +139,7 @@ public class ClientUI extends javax.swing.JFrame {
             cmbFolderChild.addItem(folder.getFolderName());
         });
     }
-
+    
     private void showDataMyFileShare() {
         tblFolderSharedModel.setRowCount(0);
         listFolderShareInfo.forEach((folder) -> {
@@ -151,9 +154,9 @@ public class ClientUI extends javax.swing.JFrame {
                     break;
                 }
             }
-
+            
         });
-
+        
         tblFileSharedModel.setRowCount(0);
         listFileShareInfo.forEach((file) -> {
             for (FileShares fileShares : listFileSharedInfo) {
@@ -175,23 +178,23 @@ public class ClientUI extends javax.swing.JFrame {
     public Folders getFolderInfo() {
         return folderInfo;
     }
-
+    
     public List<Folders> getListFolderChildInfo() {
         return listFolderChildInfo;
     }
-
+    
     public Users getUserInfo() {
         return userInfo;
     }
-
+    
     public List<Files> getListFileInfo() {
         return listFileInfo;
     }
-
+    
     public List<Permissions> getListPermissionInfo() {
         return listPermissionInfo;
     }
-
+    
     public List<String> getListNotification() {
         return notifications;
     }
@@ -1029,7 +1032,7 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lblRegisToLoginMouseClicked
 
     private void lblSignoutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSignoutMouseClicked
-
+        
         int value = JOptionPane.showConfirmDialog(this, "You will logout then click OK.!\nAre you sure.?", "Logout", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (value == JOptionPane.YES_OPTION) {
             repaint();
@@ -1044,7 +1047,7 @@ public class ClientUI extends javax.swing.JFrame {
             listFolderShareInfo = null;
             listPermissionInfo = null;
             locationYourFolder = null;
-
+            
             jLabel15.setVisible(true);
             jLabel24.setVisible(true);
             jLabel28.setVisible(true);
@@ -1052,7 +1055,7 @@ public class ClientUI extends javax.swing.JFrame {
             cmbFolderChild.setVisible(true);
             jButton1.setVisible(true);
             btnShare.setVisible(true);
-
+            
             lblTitlePath.setText("My Cloud ");
             setDefaultProcessHandler();
             setVerifyCode(0);
@@ -1094,7 +1097,7 @@ public class ClientUI extends javax.swing.JFrame {
                     user.setSex("FeMale");
                 }
                 user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
-                user.setStatus("unblock");
+                user.setStatus("unlock");
                 user.setCreateAt(DateHelper.Now());
                 ClientThread.request("register", user);
 //                ClientThread.sendMessage("register");
@@ -1201,7 +1204,7 @@ public class ClientUI extends javax.swing.JFrame {
         locationYourFolder = folderInfo.getFolderPath();
         folderSelected = folderInfo;
         prexEmailInfo = userInfo.getEmail().split("@")[0];
-
+        
         try {
             showDataMyFileCloud();
         } catch (Exception ex) {
@@ -1230,43 +1233,49 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel23MouseClicked
 
     private void jLabel24MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel24MouseClicked
-        // thiết lập đường dẫn thư mục chung anonymous
-        locationYourFolder = folderInfo.getFolderPath();
-
-        List<String> strToken = new ArrayList<>();
-        String strSub = "";
-        StringTokenizer st = new StringTokenizer(locationYourFolder);
-        while (st.hasMoreTokens()) {
-            String value = st.nextToken("/");
-            strToken.add(value);
-        }
-        for (int i = 0; i < strToken.size(); i++) {
-            if (i != strToken.size() - 1) {
-                strSub += "/" + strToken.get(i);
+        
+        if (userInfo.getAnonymousPermission().trim().equals("unlock")) {
+            // thiết lập đường dẫn thư mục chung anonymous
+            locationYourFolder = folderInfo.getFolderPath();
+            
+            List<String> strToken = new ArrayList<>();
+            String strSub = "";
+            StringTokenizer st = new StringTokenizer(locationYourFolder);
+            while (st.hasMoreTokens()) {
+                String value = st.nextToken("/");
+                strToken.add(value);
             }
-        }
-        locationYourFolder = strSub + "/anonymous";
-        folderSelected = new Folders("anonymous");
-        prexEmailInfo = "anonymous";
-        System.out.println(locationYourFolder);
-
-        // load file public in anonymous folder
-        lblTitlePath.setText("Public Cloud ");
-        tblMyFileCloudModel.setRowCount(0);
-
-        try {
-            listFileInfo.forEach((file) -> {
-                if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
-                    tblMyFileCloudModel.addRow(new Object[]{
-                        file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
-                        FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
-                    });
+            for (int i = 0; i < strToken.size(); i++) {
+                if (i != strToken.size() - 1) {
+                    strSub += "/" + strToken.get(i);
                 }
-            });
-        } catch (Exception ex) {
-            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+            }
+            locationYourFolder = strSub + "/anonymous";
+            folderSelected = new Folders("anonymous");
+            prexEmailInfo = "anonymous";
+            System.out.println(locationYourFolder);
+
+            // load file public in anonymous folder
+            lblTitlePath.setText("Public Cloud ");
+            tblMyFileCloudModel.setRowCount(0);
+            
+            try {
+                listFileInfo.forEach((file) -> {
+                    if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
+                        tblMyFileCloudModel.addRow(new Object[]{
+                            file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
+                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
+                        });
+                    }
+                });
+            } catch (Exception ex) {
+                System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+            }
+            ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
+        } else {
+            Message("Bạn không có quyền truy cập chế độ anonymous.!!!");
         }
-        ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
+
     }//GEN-LAST:event_jLabel24MouseClicked
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
@@ -1318,49 +1327,53 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void btnSignIn_AnonymousActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSignIn_AnonymousActionPerformed
-
-        ClientThread.request("authenticate_anonymous_permission", "anonymous");
-
-        while (processHandler) {
-            System.out.println("watting handler authenticate...");
-        }
-
-        Message(messageResult);
-        if (statusResult) {
-            lblSayHelloUser.setText("Xin chào: " + userInfo.getFullName());
-            txtLoginEmail.setText("");
-            txtLoginPass.setText("");
-            try {
-                // set up table show list file of user
-                tblMyFileCloudModel.setRowCount(0);
-                listFileInfo.forEach((file) -> {
-                    tblMyFileCloudModel.addRow(new Object[]{
-                        file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
-                        FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
-                    });
-                });
-            } catch (Exception ex) {
-                System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+        
+        if (ANONYMOUS_PERMISSION) {
+            ClientThread.request("authenticate_anonymous_permission", "anonymous");
+            
+            while (processHandler) {
+                System.out.println("watting handler authenticate...");
             }
-
-            locationYourFolder = folderInfo.getFolderPath();
-            folderSelected = folderInfo;
-            prexEmailInfo = "anonymous";
-
-            jLabel15.setVisible(false);
-            jLabel24.setVisible(false);
-            jLabel28.setVisible(false);
-            jButton2.setVisible(false);
-            cmbFolderChild.setVisible(false);
-            jButton1.setVisible(false);
-            btnShare.setVisible(false);
-            lblTitlePath.setText("Public Cloud ");
-            // redirect view
-            repaint();
-            ClientThread.tranferLayout(pnlContainer, "pnlMain");
-            ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
+            
+            Message(messageResult);
+            if (statusResult) {
+                lblSayHelloUser.setText("Xin chào: " + userInfo.getFullName());
+                txtLoginEmail.setText("");
+                txtLoginPass.setText("");
+                try {
+                    // set up table show list file of user
+                    tblMyFileCloudModel.setRowCount(0);
+                    listFileInfo.forEach((file) -> {
+                        tblMyFileCloudModel.addRow(new Object[]{
+                            file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
+                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
+                        });
+                    });
+                } catch (Exception ex) {
+                    System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+                }
+                
+                locationYourFolder = folderInfo.getFolderPath();
+                folderSelected = folderInfo;
+                prexEmailInfo = "anonymous";
+                
+                jLabel15.setVisible(false);
+                jLabel24.setVisible(false);
+                jLabel28.setVisible(false);
+                jButton2.setVisible(false);
+                cmbFolderChild.setVisible(false);
+                jButton1.setVisible(false);
+                btnShare.setVisible(false);
+                lblTitlePath.setText("Public Cloud ");
+                // redirect view
+                repaint();
+                ClientThread.tranferLayout(pnlContainer, "pnlMain");
+                ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
+            }
+            setDefaultProcessHandler();
+        } else {
+            Message("Bạn không có quyền truy cập chế độ ẩn danh.!!!");
         }
-        setDefaultProcessHandler();
     }//GEN-LAST:event_btnSignIn_AnonymousActionPerformed
 
     private void btnShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShareActionPerformed
@@ -1391,7 +1404,7 @@ public class ClientUI extends javax.swing.JFrame {
                     fileDownloadInfo.setFileName(fileName);
                     fileDownloadInfo.setDestinationPath(desDownloadPath);
                     fileDownloadInfo.setSourceFilePath(destinationPath);
-
+                    
                     ClientThread.request("download_file", fileDownloadInfo);
                     Message("Tải file xuống thành công.!!!");
                 }
@@ -1426,7 +1439,7 @@ public class ClientUI extends javax.swing.JFrame {
         loadCountNewNotification(0);
         TOTAL_NOTIFICATIONS = 0;
     }//GEN-LAST:event_jLabel8MouseClicked
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
     public static void processHandler(boolean status, String message) {
@@ -1469,7 +1482,7 @@ public class ClientUI extends javax.swing.JFrame {
         listFolderShareInfo = listFolderShares;
         listPermissionInfo = listPermissions;
     }
-
+    
     public static void responseDataAfterAuthen_Anonymous(Users user, Folders folder,
             List<Files> listFile) {
         userInfo = user;
@@ -1516,6 +1529,10 @@ public class ClientUI extends javax.swing.JFrame {
             locationYourFolder = folderInfo.getFolderPath();
             folderSelected = folderInfo;
             prexEmailInfo = userInfo.getEmail().split("@")[0];
+            
+            if(userInfo.getAnonymousPermission().trim().equals("lock")){
+                jLabel24.setVisible(false);
+            }
 
             // redirect view
             repaint();
@@ -1565,7 +1582,7 @@ public class ClientUI extends javax.swing.JFrame {
         int remainingSizeFolderConvert
                 = Integer.parseInt(remainingSizeFolder.replaceAll(",", ""))
                 - Integer.parseInt(fileInfo.getFileSize().replaceAll(",", ""));
-
+        
         int used = (Integer.parseInt(totalSize) - remainingSizeFolderConvert) / (1024 * 1024);
         folderInfo.setRemainingSize(String.valueOf(remainingSizeFolderConvert));
         jLabel5.setText("Used " + used + "MB out of "
@@ -1589,7 +1606,7 @@ public class ClientUI extends javax.swing.JFrame {
 
                     // quyền anonymous
                     if (userInfo.getEmail().trim().equals("anonymous")) {
-
+                        
                         @SuppressWarnings("unchecked")
                         // <editor-fold defaultstate="collapsed" desc="Upload file với quyền anonymous">
                         Files fileInfo = new Files();
@@ -1602,9 +1619,9 @@ public class ClientUI extends javax.swing.JFrame {
                         fileInfo.setFolderId(folderSelected.getFolderId());
                         fileInfo.setUploadAt(DateHelper.Now());
                         fileInfo.setPrexEmail(prexEmailInfo);
-
+                        
                         ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
-
+                        
                         try {
                             boolean checkLoop = false;
                             for (Files item : listFileInfo) {
@@ -1622,7 +1639,7 @@ public class ClientUI extends javax.swing.JFrame {
                         } catch (Exception ex) {
                             System.err.println("Xảy ra lỗi khi add thông tin file vào list - " + ex);
                         }
-
+                        
                         try {
                             // set up table show list file of user
                             tblMyFileCloudModel.setRowCount(0);
@@ -1635,7 +1652,7 @@ public class ClientUI extends javax.swing.JFrame {
                         } catch (Exception ex) {
                             System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
                         }
-
+                        
                         Message("Tải file lên thành công.!!!");
                         return;
                         //</editor-fold>
@@ -1656,7 +1673,7 @@ public class ClientUI extends javax.swing.JFrame {
                             fileInfo.setFolderId(folderSelected.getFolderId());
                             fileInfo.setUploadAt(DateHelper.Now());
                             fileInfo.setPrexEmail(prexEmailInfo);
-
+                            
                             ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
 
 //                    ClientThread.request("upload_file", fileInfo);
@@ -1694,7 +1711,7 @@ public class ClientUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="handleUploadFileToFolderShare">
     private void handleUploadFileToFolderShare() {
-
+        
         int selectedRow = tblFolderShared.getSelectedRow();
         String permission = tblFolderShared.getValueAt(selectedRow, 5).toString();
 
@@ -1729,7 +1746,7 @@ public class ClientUI extends javax.swing.JFrame {
                             fileInfo.setUploadAt(DateHelper.Now());
                             fileInfo.setPrexEmail(emailParent.split("@")[0]);
                             fileInfo.setEmailShare(userInfo.getEmail());
-
+                            
                             ClientThread.requestFileSender("upload_file_share", fileInfo, file, locationYourFolder);
 
                             // check file name exist
@@ -1803,7 +1820,7 @@ public class ClientUI extends javax.swing.JFrame {
         table.getColumnModel().getColumn(0).setMaxWidth(0);
         table.getColumnModel().getColumn(0).setWidth(0);
     }
-
+    
     private void hiddenColumn(JTable table, int columnIndex) {
         table.getColumnModel().getColumn(columnIndex).setMinWidth(0);
         table.getColumnModel().getColumn(columnIndex).setMaxWidth(0);
@@ -1824,15 +1841,15 @@ public class ClientUI extends javax.swing.JFrame {
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(ClientUI.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
+            
         } catch (InstantiationException ex) {
             java.util.logging.Logger.getLogger(ClientUI.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
+            
         } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(ClientUI.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
+            
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ClientUI.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
@@ -1851,32 +1868,32 @@ public class ClientUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
 // <editor-fold defaultstate="collapsed" desc="Rounded">
     class RoundedPanel extends JPanel {
-
+        
         private Color backgroundColor;
         private int cornerRadius = 15;
-
+        
         public RoundedPanel(int radius) {
             super();
             cornerRadius = radius;
         }
-
+        
         public RoundedPanel(LayoutManager layout, int radius) {
             super(layout);
             cornerRadius = radius;
         }
-
+        
         public RoundedPanel(int radius, Color bgColor) {
             super();
             cornerRadius = radius;
             backgroundColor = bgColor;
         }
-
+        
         public RoundedPanel(LayoutManager layout, int radius, Color bgColor) {
             super(layout);
             cornerRadius = radius;
             backgroundColor = bgColor;
         }
-
+        
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponents(g);
@@ -1895,23 +1912,23 @@ public class ClientUI extends javax.swing.JFrame {
             graphics.setColor(getForeground());
         }
     }
-
+    
     class RoundedLable extends JLabel {
-
+        
         private Color backgroundColor;
         private int cornerRadius = 15;
-
+        
         public RoundedLable(int radius) {
             super();
             cornerRadius = radius;
         }
-
+        
         public RoundedLable(int radius, Color bgColor) {
             super();
             cornerRadius = radius;
             backgroundColor = bgColor;
         }
-
+        
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponents(g);
@@ -1930,23 +1947,23 @@ public class ClientUI extends javax.swing.JFrame {
             graphics.setColor(getForeground());
         }
     }
-
+    
     class RoundedSignIn extends JLabel {
-
+        
         private Color backgroundColor;
         private int cornerRadius = 15;
-
+        
         public RoundedSignIn(int radius) {
             super();
             cornerRadius = radius;
         }
-
+        
         public RoundedSignIn(int radius, Color bgColor) {
             super();
             cornerRadius = radius;
             backgroundColor = bgColor;
         }
-
+        
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponents(g);
@@ -1966,23 +1983,23 @@ public class ClientUI extends javax.swing.JFrame {
             graphics.drawString("Sign In", 37, 26);
         }
     }
-
+    
     class RoundedRegister extends JLabel {
-
+        
         private Color backgroundColor;
         private int cornerRadius = 15;
-
+        
         public RoundedRegister(int radius) {
             super();
             cornerRadius = radius;
         }
-
+        
         public RoundedRegister(int radius, Color bgColor) {
             super();
             cornerRadius = radius;
             backgroundColor = bgColor;
         }
-
+        
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponents(g);
@@ -2034,7 +2051,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
+    public static javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;

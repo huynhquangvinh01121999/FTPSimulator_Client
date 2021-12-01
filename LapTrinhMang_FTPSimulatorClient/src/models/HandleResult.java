@@ -7,6 +7,12 @@ package models;
 
 import java.io.Serializable;
 import java.util.List;
+import models.FileShares;
+import models.Files;
+import models.FolderShares;
+import models.Folders;
+import models.Permissions;
+import models.Users;
 
 /**
  *

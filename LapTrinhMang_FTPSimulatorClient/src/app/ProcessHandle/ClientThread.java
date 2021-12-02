@@ -350,6 +350,7 @@ public class ClientThread {
             while (!isDisconnect) {
 
                 ObjectRequest response;
+                // đồng bộ read object response
                 synchronized (objInputStream) {
                     response = (ObjectRequest) objInputStream.readObject();
                 }

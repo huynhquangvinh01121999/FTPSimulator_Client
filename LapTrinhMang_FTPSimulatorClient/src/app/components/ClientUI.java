@@ -233,7 +233,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         btnSignIn_Anonymous = new javax.swing.JButton();
-        btntest = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
         jLabel14 = new RoundedLable(50, new Color(69,156,81));
         jPanel3 = new RoundedPanel(100, new Color(83,187,98));
         jLabel16 = new javax.swing.JLabel();
@@ -258,6 +258,7 @@ public class ClientUI extends javax.swing.JFrame {
         lblRegister = new RoundedRegister(30, new Color(83,187,98));
         lblRegisToLogin = new javax.swing.JLabel();
         txtRegis_Email = new javax.swing.JTextField();
+        jLabel30 = new javax.swing.JLabel();
         pnlMain = new javax.swing.JPanel();
         lblUploadNewFile = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -390,7 +391,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel13.setText("Login FCloud");
         jPanel1.add(jLabel13);
-        jLabel13.setBounds(20, 30, 350, 100);
+        jLabel13.setBounds(80, 60, 230, 70);
 
         jLabel26.setForeground(new java.awt.Color(204, 204, 204));
         jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -419,14 +420,19 @@ public class ClientUI extends javax.swing.JFrame {
         jPanel1.add(btnSignIn_Anonymous);
         btnSignIn_Anonymous.setBounds(86, 465, 240, 30);
 
-        btntest.setText("test");
-        btntest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btntestActionPerformed(evt);
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("X");
+        jLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 0)));
+        jLabel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
             }
         });
-        jPanel1.add(btntest);
-        btntest.setBounds(30, 10, 51, 23);
+        jPanel1.add(jLabel1);
+        jLabel1.setBounds(324, 30, 30, 30);
 
         pnlLogin.add(jPanel1);
         jPanel1.setBounds(520, 20, 390, 530);
@@ -584,13 +590,22 @@ public class ClientUI extends javax.swing.JFrame {
         txtRegis_Email.setFont(new java.awt.Font("Tahoma", 0, 13)); // NOI18N
         txtRegis_Email.setForeground(new java.awt.Color(204, 204, 204));
         txtRegis_Email.setBorder(null);
-        txtRegis_Email.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                txtRegis_EmailKeyReleased(evt);
-            }
-        });
         jPanel2.add(txtRegis_Email);
         txtRegis_Email.setBounds(50, 120, 280, 40);
+
+        jLabel30.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel30.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel30.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel30.setText("X");
+        jLabel30.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 0)));
+        jLabel30.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel30.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel30MouseClicked(evt);
+            }
+        });
+        jPanel2.add(jLabel30);
+        jLabel30.setBounds(320, 10, 30, 30);
 
         pnlRegister.add(jPanel2);
         jPanel2.setBounds(380, 0, 390, 570);
@@ -1039,6 +1054,11 @@ public class ClientUI extends javax.swing.JFrame {
     private void lblRegisToLoginMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblRegisToLoginMouseClicked
         repaint();
         ClientThread.tranferLayout(pnlContainer, "pnlLogin");
+        txtRegis_Email.setText("");
+        txtRegis_Pass.setText("");
+        txtRegis_FullName.setText("");
+        isVerify = false;
+        verifyCode = 0;
         lblVerifyInfo.setVisible(false);
         txtVerifyCode.setVisible(false);
     }//GEN-LAST:event_lblRegisToLoginMouseClicked
@@ -1138,16 +1158,8 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lblRegisterMouseClicked
 
     private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
-        int value = JOptionPane.showConfirmDialog(this, "You will shutdown then click OK.!\nAre you sure.?", "Warnning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        if (value == JOptionPane.YES_OPTION) {
-            JOptionPane.showMessageDialog(this, "Thanks for using FCloud.!!!", "Successfully", JOptionPane.INFORMATION_MESSAGE);
-            ClientThread.disconnect();
-        }
+        shutdown();
     }//GEN-LAST:event_jLabel3MouseClicked
-
-    private void txtRegis_EmailKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtRegis_EmailKeyReleased
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtRegis_EmailKeyReleased
 
     private void lblUploadNewFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblUploadNewFileMouseClicked
 
@@ -1374,7 +1386,7 @@ public class ClientUI extends javax.swing.JFrame {
                         }
                     }
                 }
-            }else{
+            } else {
                 Message("Bạn không thể download file từ thư mục này.\nVì bạn đã bị lock quyền user trong folder này.\nVui lòng quay lại sau.!!!");
             }
         } else {
@@ -1438,11 +1450,6 @@ public class ClientUI extends javax.swing.JFrame {
         share.show();
     }//GEN-LAST:event_btnShareActionPerformed
 
-    private void btntestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btntestActionPerformed
-        System.out.println("1");
-        ClientThread.request("test", "test");
-    }//GEN-LAST:event_btntestActionPerformed
-
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         int selectedRow = tblFileShared.getSelectedRow();
         String permission = tblFileShared.getValueAt(selectedRow, 7).toString();
@@ -1497,6 +1504,25 @@ public class ClientUI extends javax.swing.JFrame {
         TOTAL_NOTIFICATIONS = 0;
     }//GEN-LAST:event_jLabel8MouseClicked
 
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+        shutdown();
+    }//GEN-LAST:event_jLabel1MouseClicked
+
+    private void jLabel30MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel30MouseClicked
+        shutdown();
+    }//GEN-LAST:event_jLabel30MouseClicked
+    
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="SHUT DOWN">
+    private void shutdown(){
+        int value = JOptionPane.showConfirmDialog(this, "You will shutdown then click OK.!\nAre you sure.?", "Warnning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (value == JOptionPane.YES_OPTION) {
+            JOptionPane.showMessageDialog(this, "Thanks for using FCloud.!!!", "Successfully", JOptionPane.INFORMATION_MESSAGE);
+            ClientThread.disconnect();
+        }
+    }
+    //</editor-fold>
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
     public static void processHandler(boolean status, String message) {
@@ -2090,7 +2116,6 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup btnGroup_Sex;
     private javax.swing.JButton btnShare;
     private javax.swing.JButton btnSignIn_Anonymous;
-    private javax.swing.JButton btntest;
     private javax.swing.JCheckBox cbRemember;
     private javax.swing.JCheckBox cboRegis_FeMale;
     private javax.swing.JCheckBox cboRegis_Male;
@@ -2099,6 +2124,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -2121,6 +2147,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

@@ -25,6 +25,7 @@ import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.*;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -49,7 +50,7 @@ public class ClientUI extends javax.swing.JFrame {
     // return info when after login
     public static Users userInfo;
     public static Folders folderInfo;
-    private static Folders folderSelected;
+    public static Folders folderSelected;
     public static List<Folders> listFolderChildInfo;
     private static List<Files> listFileInfo;
     private static List<FileShares> listFileSharedInfo;
@@ -136,8 +137,10 @@ public class ClientUI extends javax.swing.JFrame {
         tblMyFileCloudModel.setRowCount(0);
         listFileInfo.forEach((file) -> {
             tblMyFileCloudModel.addRow(new Object[]{
-                file.getFileName().trim(), file.getPrexEmail().trim(),
-                file.getUploadAt().trim(), file.getFileExtension().trim(),
+                file.getFileName().trim(),
+                file.getPrexEmail().trim(),
+                file.getUploadAt().trim(),
+                file.getFileExtension().trim(),
                 FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
                 file.getFileSize().trim(),
                 file.getFolderId().trim()
@@ -148,7 +151,8 @@ public class ClientUI extends javax.swing.JFrame {
         cmbFolderChild.removeAllItems();
         cmbFolderChild.addItem("--Choose a folder child--");
         listFolderChildInfo.forEach((folder) -> {
-            cmbFolderChild.addItem(folder.getFolderName());
+            String folderPath = folder.getFolderPath().substring(folderInfo.getFolderPath().length());
+            cmbFolderChild.addItem(folderPath);
         });
     }
 
@@ -743,7 +747,7 @@ public class ClientUI extends javax.swing.JFrame {
             }
         });
         pnlMyCloud.add(cmbFolderChild);
-        cmbFolderChild.setBounds(250, 80, 180, 50);
+        cmbFolderChild.setBounds(250, 80, 260, 50);
 
         jButton1.setBackground(new java.awt.Color(212, 255, 255));
         jButton1.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
@@ -1063,34 +1067,38 @@ public class ClientUI extends javax.swing.JFrame {
         txtVerifyCode.setVisible(false);
     }//GEN-LAST:event_lblRegisToLoginMouseClicked
 
+    public static void resetSignOut() {
+        ClientThread.tranferLayout(pnlContainer, "pnlLogin");
+        userInfo = null;
+        folderInfo = null;
+        folderSelected = null;
+        listFolderChildInfo = null;
+        listFileInfo = null;
+        listFileShareInfo = null;
+        listFolderChildInfo = null;
+        listFolderShareInfo = null;
+        listPermissionInfo = null;
+        locationYourFolder = null;
+
+        jLabel15.setVisible(true);
+        jLabel24.setVisible(true);
+        jLabel28.setVisible(true);
+        jButton2.setVisible(true);
+        cmbFolderChild.setVisible(true);
+        jButton1.setVisible(true);
+        btnShare.setVisible(true);
+
+        lblTitlePath.setText("My Cloud ");
+        setDefaultProcessHandler();
+        setVerifyCode(0);
+    }
+
     private void lblSignoutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSignoutMouseClicked
 
         int value = JOptionPane.showConfirmDialog(this, "You will logout then click OK.!\nAre you sure.?", "Logout", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (value == JOptionPane.YES_OPTION) {
             repaint();
-            ClientThread.tranferLayout(pnlContainer, "pnlLogin");
-            userInfo = null;
-            folderInfo = null;
-            folderSelected = null;
-            listFolderChildInfo = null;
-            listFileInfo = null;
-            listFileShareInfo = null;
-            listFolderChildInfo = null;
-            listFolderShareInfo = null;
-            listPermissionInfo = null;
-            locationYourFolder = null;
-
-            jLabel15.setVisible(true);
-            jLabel24.setVisible(true);
-            jLabel28.setVisible(true);
-            jButton2.setVisible(true);
-            cmbFolderChild.setVisible(true);
-            jButton1.setVisible(true);
-            btnShare.setVisible(true);
-
-            lblTitlePath.setText("My Cloud ");
-            setDefaultProcessHandler();
-            setVerifyCode(0);
+            resetSignOut();
         }
     }//GEN-LAST:event_lblSignoutMouseClicked
 
@@ -1105,9 +1113,6 @@ public class ClientUI extends javax.swing.JFrame {
         if (!isVerify) {  // nếu chưa check
 
             ClientThread.request("verify_register", user);
-            // version_1
-//            ClientThread.sendMessage("verify_register");    // bắn thông báo check đầu vào
-//            ClientThread.sendObjectUser(user);    // bắn thông tin user cho server
             while (processHandler) {
                 System.out.println("watting handler register...");
                 // do not something...
@@ -1132,8 +1137,6 @@ public class ClientUI extends javax.swing.JFrame {
                 user.setStatus("unlock");
                 user.setCreateAt(DateHelper.Now());
                 ClientThread.request("register", user);
-//                ClientThread.sendMessage("register");
-//                ClientThread.sendObjectUser(user);
                 while (processHandler) {
                     System.out.println("watting handler register...");
                     // do not something...
@@ -1183,16 +1186,18 @@ public class ClientUI extends javax.swing.JFrame {
                 String selectedFolderChildName = cmbFolderChild.getSelectedItem().toString();
                 if (!selectedFolderChildName.toLowerCase()
                         .equalsIgnoreCase(compare.toLowerCase())) {
-                    locationYourFolder = folderInfo.getFolderPath()
-                            + "/" + selectedFolderChildName;
                     lblTitlePath.setText("My Cloud > " + selectedFolderChildName + " ");
 
-                    // set folderSelected
+                    // duyệt danh sách folder con cháu chít để gán value cho folderSelected
                     listFolderChildInfo.forEach((folderChild) -> {
-                        if (folderChild.getFolderName().trim().equals(selectedFolderChildName.trim())) {
+                        String folderPath = folderChild.getFolderPath().trim().substring(folderInfo.getFolderPath().length());
+                        if (folderPath.equals(selectedFolderChildName.trim())) {
                             folderSelected = folderChild;
                         }
                     });
+
+                    // lấy ra đường dẫn đang đc chọn từ combobox
+                    locationYourFolder = folderSelected.getFolderPath();
 
                     // load file in folder children
                     tblMyFileCloudModel.setRowCount(0);
@@ -1200,8 +1205,13 @@ public class ClientUI extends javax.swing.JFrame {
                         listFileInfo.forEach((file) -> {
                             if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
                                 tblMyFileCloudModel.addRow(new Object[]{
-                                    file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
-                                    FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
+                                    file.getFileName().trim(),
+                                    file.getPrexEmail().trim(),
+                                    file.getUploadAt().trim(),
+                                    file.getFileExtension().trim(),
+                                    FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                                    file.getFileSize().trim(),
+                                    file.getFolderId().trim()
                                 });
                             }
                         });
@@ -1216,7 +1226,7 @@ public class ClientUI extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            System.err.println("combobox folder child lấy lần đầu bị null" + ex);
+//            System.err.println("combobox folder child lấy lần đầu bị null" + ex);
             lblTitlePath.setText("My Cloud ");
             locationYourFolder = folderInfo.getFolderPath();
         }
@@ -1258,6 +1268,9 @@ public class ClientUI extends javax.swing.JFrame {
 
     private void jLabel24MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel24MouseClicked
 
+        IS_UPLOAD_SHARE_WITH_ME = false;
+
+        // check user có quyền truy cập anonymous ko???
         if (userInfo.getAnonymousPermission().trim().equals("unlock")) {
             // thiết lập đường dẫn thư mục chung anonymous
             locationYourFolder = folderInfo.getFolderPath();
@@ -1270,12 +1283,12 @@ public class ClientUI extends javax.swing.JFrame {
                 strToken.add(value);
             }
             for (int i = 0; i < strToken.size(); i++) {
-                if (i != strToken.size() - 1) {
+                if (i != (strToken.size() - 1)) {
                     strSub += "/" + strToken.get(i);
                 }
             }
             locationYourFolder = strSub + "/anonymous";
-            folderSelected = new Folders("anonymous");
+            folderSelected = new Folders("anonymous", "unlock");
             prexEmailInfo = "anonymous";
             System.out.println(locationYourFolder);
 
@@ -1287,8 +1300,13 @@ public class ClientUI extends javax.swing.JFrame {
                 listFileInfo.forEach((file) -> {
                     if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
                         tblMyFileCloudModel.addRow(new Object[]{
-                            file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
-                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
+                            file.getFileName().trim(),
+                            file.getPrexEmail().trim(),
+                            file.getUploadAt().trim(),
+                            file.getFileExtension().trim(),
+                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                            file.getFileSize().trim(),
+                            file.getFolderId().trim()
                         });
                     }
                 });
@@ -1304,6 +1322,8 @@ public class ClientUI extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
+        // KHI ĐĂNG NHẬP VỚI QUYỀN ANONYMOUS
+        // KHI ĐĂNG NHẬP VỚI QUYỀN USER
         // check user có đc quyền download ko???
         if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
                 || userInfo.getPermissionId().trim().toLowerCase().equals("d")) {
@@ -1311,83 +1331,108 @@ public class ClientUI extends javax.swing.JFrame {
             // lấy ra số dòng đc chọn
             int selectedRow = tblMyFileCloud.getSelectedRow();
 
-            /* Kiểm tra user có quyền download file từ folder này ko???
+            // check danh sách file có rỗng ko???
+            if (listFileInfo.isEmpty()) {
+                Message("Không có file nào trên cloud của bạn.!!!");
+            } else {
+
+                // kiểm tra đã chọn file cần download chưa???
+                if (selectedRow == -1) {
+                    Message("Vui lòng chọn một file cần download.!!!");
+                } else {
+
+                    /* Kiểm tra user có quyền download file từ folder này ko???
              * + B1: lấy ra folderId của file đc chọn
              * + B2: kiểm tra folderId vs folderInfo.getFolderId() có trùng nhau k
              * TH1: trùng thì check quyền FolderUserPermission -> để quyết định có đc download hay ko -> Stop
              * TH2: ko trùng thì đi tới bước 3
-             * + B3: duyệt danh sách các folder con của user
-             * + B4: thực hiện tương tự B2 -> check đến khi nào tìm thấy folderId trùng nhau thì break rồi nhảy vào 2 TH
-             */
-            boolean flagCheckAllowUser = false;
-            String folderIdSelected = tblMyFileCloud.getValueAt(selectedRow, 6).toString(); // B1
-            if (folderIdSelected.trim().equals(folderInfo.getFolderId().trim())) {    // B2
-                if (folderInfo.getFolderUserPermission().trim().equals("unlock")) {   // B2 -> TH1
-                    flagCheckAllowUser = true;
-                }
-            } else {  // B2 -> TH2 -> B3
-                for (Folders folder : listFolderChildInfo) {
-                    if (folderIdSelected.trim().equals(folder.getFolderId().trim())) {    // quay lại B2 check
-                        if (folder.getFolderUserPermission().trim().equals("unlock")) {
+             * + B3: check folderId có thuộc folder anonymous ko ??? -> có -> gán flag = true -> stop check ? ko -> B4
+             * + B4: duyệt danh sách các folder con của user
+             * + B5: thực hiện tương tự B2 -> check đến khi nào tìm thấy folderId trùng nhau thì break rồi nhảy vào 2 TH
+                     */
+                    boolean flagCheckAllowUser = false;
+                    String folderIdSelected = tblMyFileCloud.getValueAt(selectedRow, 6).toString(); // B1
+                    if (folderIdSelected.trim().equals(folderInfo.getFolderId().trim())) {    // B2
+                        if (folderInfo.getFolderUserPermission().trim().equals("unlock")) {   // B2 -> TH1
                             flagCheckAllowUser = true;
                         }
-                        break;  // break vòng lặp ngay khi tìm thấy folderId trùng
+                    } else {  // B2 -> TH2
+                        if (folderIdSelected.trim().equals("anonymous")) {  // B3
+                            flagCheckAllowUser = true;
+                        } else {
+                            for (Folders folder : listFolderChildInfo) {    // B4
+                                if (folderIdSelected.trim().equals(folder.getFolderId().trim())) {    // B5 quay lại B2 check
+                                    if (folder.getFolderUserPermission().trim().equals("unlock")) {
+                                        flagCheckAllowUser = true;
+                                    }
+                                    break;  // break vòng lặp ngay khi tìm thấy folderId trùng
+                                }
+                            }
+                        }
                     }
-                }
-            }
 
-            /* kiểm tra cờ:
+                    /* kiểm tra cờ:
              * flagCheckAllowUser = true -> cho phép
              * flagCheckAllowUser = false -> ko cho phép
-             */
-            if (flagCheckAllowUser) {
-
-                // check danh sách file có rỗng ko???
-                if (listFileInfo.isEmpty()) {
-                    Message("Không có file nào trên cloud của bạn.!!!");
-                } else {
-
-                    // check đã chọn file để download chưa???
-                    if (selectedRow == -1) {
-                        Message("Vui lòng chọn 1 file để download.!!!");
-                    } else {
-
+                     */
+                    if (flagCheckAllowUser) {
                         // lấy ra kích thước file
                         String fileSize = tblMyFileCloud.getValueAt(selectedRow, 5).toString();
 
                         // kiểm tra kích thước file download có vượt mức cho phép ko???
                         if (Long.parseLong(fileSize) <= Long.parseLong(userInfo.getFileSizeDownload().trim())) {
-                            boolean checkSourcePath = false;
-                            String fileName = tblMyFileCloud.getValueAt(selectedRow, 0).toString();
-                            String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
-                                    + "/Downloads/";
-                            FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-                            fileDownloadInfo.setFileName(fileName);
-                            fileDownloadInfo.setDestinationPath(desDownloadPath);
 
-                            // kiểm tra có tồn tại file ko, dựa vào tên file đc chọn
-                            for (Files file : listFileInfo) {
-                                if (file.getFileName().trim().equals(fileName.trim())) {
-                                    fileDownloadInfo.setSourceFilePath(file.getSourcePath());
-                                    checkSourcePath = true;
+                            // chọn đường dẫn download file
+                            JFileChooser destFile = new JFileChooser();
+                            destFile.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                            destFile.setCurrentDirectory(new File(System.getProperty("user.home")));
+                            destFile.showOpenDialog(this);
+                            File selectedFile = destFile.getSelectedFile();
+                            if (selectedFile != null) {
+
+                                String destPathDownload = selectedFile.getAbsolutePath();
+
+                                // kiểm tra đã chọn đường dẫn download chưa???
+                                if (!destPathDownload.trim().equals("")) {
+                                    boolean checkSourcePath = false;
+                                    String fileName = tblMyFileCloud.getValueAt(selectedRow, 0).toString();
+//                            String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
+//                                    + "/Downloads/";
+                                    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+                                    fileDownloadInfo.setFileName(fileName);
+                                    fileDownloadInfo.setDestinationPath(FileExtensions.replaceBackslashes(destPathDownload) + "/");
+
+                                    // kiểm tra có tồn tại file ko, dựa vào tên file đc chọn
+                                    for (Files file : listFileInfo) {
+                                        if (file.getFileName().trim().equals(fileName.trim())) {
+                                            fileDownloadInfo.setSourceFilePath(file.getSourcePath());
+                                            checkSourcePath = true;
+                                        }
+                                    }
+                                    if (checkSourcePath) {
+                                        ClientThread.request("download_file", fileDownloadInfo);
+                                        Message("Tải xuống thành công.!!!");
+                                        return;
+                                    } else {
+                                        Message("File không tồn tại hoặc đã bị xóa.!!!");
+                                    }
+                                } else {
+                                    Message("Vui lòng chọn đường dẫn download file.!!!");
                                 }
-                            }
-                            if (checkSourcePath) {
-                                ClientThread.request("download_file", fileDownloadInfo);
-                                Message("Tải xuống thành công.!!!");
-                                return;
                             } else {
-                                Message("File không tồn tại hoặc đã bị xóa.!!!");
+                                Message("Vui lòng chọn đường dẫn download file.!!!");
                             }
+
                         } else {
-                            Message("Kích thước file download không được vượt quá "
-                                    + Integer.parseInt(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) / (1024 * 1024)
-                                    + "MB.!!!");
+                            Message("Kích thước file download tối đa"
+                                    + ((Integer.parseInt(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) / 1024)
+                                    + (Integer.parseInt(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) % 1024))
+                                    + "KB.!!!");
                         }
+                    } else {
+                        Message("Bạn không thể download file từ thư mục này.\nVì bạn đã bị lock quyền user trong folder này.\nVui lòng quay lại sau.!!!");
                     }
                 }
-            } else {
-                Message("Bạn không thể download file từ thư mục này.\nVì bạn đã bị lock quyền user trong folder này.\nVui lòng quay lại sau.!!!");
             }
         } else {
             Message("Chức năng download của bạn đã bị chặn.!!!");
@@ -1410,14 +1455,7 @@ public class ClientUI extends javax.swing.JFrame {
                 txtLoginEmail.setText("");
                 txtLoginPass.setText("");
                 try {
-                    // set up table show list file of user
-                    tblMyFileCloudModel.setRowCount(0);
-                    listFileInfo.forEach((file) -> {
-                        tblMyFileCloudModel.addRow(new Object[]{
-                            file.getFileName(), "tôi", file.getUploadAt(), file.getFileExtension(),
-                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB"
-                        });
-                    });
+                    showDataMyFileCloud();
                 } catch (Exception ex) {
                     System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
                 }
@@ -1451,32 +1489,57 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnShareActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        int selectedRow = tblFileShared.getSelectedRow();
-        String permission = tblFileShared.getValueAt(selectedRow, 7).toString();
-        if (permission.trim().equals("d") || permission.trim().equals("all")) {
-            if (listFileShareInfo.size() == 0) {
-                Message("Không có file nào được chia sẻ cho bạn.!!!");
-            } else {
-                if (selectedRow == -1) {
-                    Message("Vui lòng chọn 1 file để download.!!!");
-                } else {
-                    String fileName = tblFileShared.getValueAt(selectedRow, 1).toString();
-                    String desDownloadPath = FileExtensions.replaceBackslashes(System.getProperty("user.home"))
-                            + "/Downloads/";
-                    String destinationPath = tblFileShared.getValueAt(selectedRow, 6).toString();
-                    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-                    fileDownloadInfo.setFileName(fileName);
-                    fileDownloadInfo.setDestinationPath(desDownloadPath);
-                    fileDownloadInfo.setSourceFilePath(destinationPath);
 
-                    ClientThread.request("download_file", fileDownloadInfo);
-                    Message("Tải file xuống thành công.!!!");
+        // check user có đc quyền download ko???
+        if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
+                || userInfo.getPermissionId().trim().toLowerCase().equals("d")) {
+
+            // check danh sách file đc chia sẻ có ko???
+            if (listFileShareInfo.isEmpty()) {
+                Message("Bạn chưa đc chia sẻ file nào.!!!");
+            } else {
+                int selectedRow = tblFileShared.getSelectedRow();
+
+                // check đã chọn file cần download chưa
+                if (selectedRow == -1) {
+                    Message("Vui lòng chọn 1 file cần download.!!!");
+                } else {
+                    String permission = tblFileShared.getValueAt(selectedRow, 7).toString();
+                    if (permission.trim().equals("d") || permission.trim().equals("a")) {
+
+                        // chọn đường dẫn download file
+                        JFileChooser destFile = new JFileChooser();
+                        destFile.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                        destFile.setCurrentDirectory(new File(System.getProperty("user.home")));
+                        destFile.showOpenDialog(this);
+                        File selectedFile = destFile.getSelectedFile();
+                        if (selectedFile != null) {
+
+                            String destPathDownload = selectedFile.getAbsolutePath();
+
+                            // kiểm tra đã chọn đường dẫn download chưa???
+                            if (!destPathDownload.trim().equals("")) {
+                                String fileName = tblFileShared.getValueAt(selectedRow, 1).toString();
+                                String destinationPath = tblFileShared.getValueAt(selectedRow, 6).toString();
+                                FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+                                fileDownloadInfo.setFileName(fileName);
+                                fileDownloadInfo.setDestinationPath(FileExtensions.replaceBackslashes(destPathDownload) + "/");
+                                fileDownloadInfo.setSourceFilePath(destinationPath);
+
+                                ClientThread.request("download_file", fileDownloadInfo);
+                                Message("Tải file xuống thành công.!!!");
+                            }else{
+                                Message("Vui lòng chọn đường dẫn tải xuống.!!!");
+                            }
+                        }else{
+                            Message("Vui lòng chọn đường dẫn tải xuống.!!!");
+                        }
+                    } else {
+                        Message("Bạn không có quyền tải xuống file này.!!!");
+                    }
                 }
             }
-        } else {
-            Message("Bạn không có quyền tải xuống thư mục này.!!!");
         }
-
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
@@ -1511,10 +1574,10 @@ public class ClientUI extends javax.swing.JFrame {
     private void jLabel30MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel30MouseClicked
         shutdown();
     }//GEN-LAST:event_jLabel30MouseClicked
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="SHUT DOWN">
-    private void shutdown(){
+    private void shutdown() {
         int value = JOptionPane.showConfirmDialog(this, "You will shutdown then click OK.!\nAre you sure.?", "Warnning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (value == JOptionPane.YES_OPTION) {
             JOptionPane.showMessageDialog(this, "Thanks for using FCloud.!!!", "Successfully", JOptionPane.INFORMATION_MESSAGE);
@@ -1522,7 +1585,7 @@ public class ClientUI extends javax.swing.JFrame {
         }
     }
     //</editor-fold>
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Process tiến trình xử lý bắn request -> chờ response -> end">
     public static void processHandler(boolean status, String message) {
@@ -1534,7 +1597,7 @@ public class ClientUI extends javax.swing.JFrame {
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Thiết lập mặc định process tiến trình xử lý bắn request">
-    private void setDefaultProcessHandler() {
+    private static void setDefaultProcessHandler() {
         processHandler = true;
         statusResult = false;
         messageResult = "";
@@ -1683,8 +1746,10 @@ public class ClientUI extends javax.swing.JFrame {
                 || userInfo.getPermissionId().trim().toLowerCase().equals("u")) {   // TH có
             File file = FileExtensions.getFileChooser();    // open dialog and chọn file
 
+            // kiểm tra có chọn file chưa ???
             if (file != null) {
-                // kiểm tra kích thước file
+
+                // kiểm tra kích thước file có đạt mức cho phép upload ko???
                 if (FileHandler.compareFileSize(file, userInfo.getFileSizeUpload().trim())) {
 
                     // quyền anonymous
@@ -1707,6 +1772,7 @@ public class ClientUI extends javax.swing.JFrame {
 
                         try {
                             boolean checkLoop = false;
+                            // cập nhật lại file nếu nó tồn tại rồi
                             for (Files item : listFileInfo) {
                                 if (item.getFileName().equals(fileInfo.getFileName())) {
                                     item.setFileSize(fileInfo.getFileSize());
@@ -1728,8 +1794,13 @@ public class ClientUI extends javax.swing.JFrame {
                             tblMyFileCloudModel.setRowCount(0);
                             listFileInfo.forEach((item) -> {
                                 tblMyFileCloudModel.addRow(new Object[]{
-                                    item.getFileName(), "tôi", item.getUploadAt(), item.getFileExtension(),
-                                    FileExtensions.convertSizeFromSizeString(item.getFileSize(), "MB") + " MB"
+                                    item.getFileName().trim(),
+                                    item.getPrexEmail().trim(),
+                                    item.getUploadAt().trim(),
+                                    item.getFileExtension().trim(),
+                                    FileExtensions.convertSizeFromSizeString(item.getFileSize(), "MB") + " MB",
+                                    item.getFileSize().trim(),
+                                    item.getFolderId().trim()
                                 });
                             });
                         } catch (Exception ex) {
@@ -1743,10 +1814,10 @@ public class ClientUI extends javax.swing.JFrame {
                     } else {
 
                         // <editor-fold defaultstate="collapsed" desc="Upload file với quyền user">
-                        // kiểm tra folder đc chọn để upload file có được cấp quyền user chưa
+                        // kiểm tra folder đc chọn để upload file có được cấp quyền user chưa???
                         if (folderSelected.getFolderUserPermission().trim().equals("unlock")) {   // đã đc cấp
 
-                            // kiểm tra dung lượng folder còn đủ ko
+                            // kiểm tra dung lượng folder còn đủ ko???
                             if (isHaveEnoughSizeFolder(folderInfo.getRemainingSize(),
                                     String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())))) {
                                 Files fileInfo = new Files();
@@ -1762,16 +1833,7 @@ public class ClientUI extends javax.swing.JFrame {
 
                                 ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
 
-//                    ClientThread.request("upload_file", fileInfo);
-//                    try {
-//                        Thread.sleep(3000);
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(ClientUI.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                    ClientThread.requestFileSender(file, locationYourFolder);
-//                    ClientThread.sendMessage("upload_file");
-//                    ClientThread.FileSender(fileInfo, file, locationYourFolder);
-                                // check file name exist
+                                // Kiểm tra tên file khi upload đã tồn tại chưa???
                                 checkFileNameExist(fileInfo);
                                 showDataMyFileCloud();
                                 Message("Tải file lên thành công.!!!");
@@ -1786,10 +1848,10 @@ public class ClientUI extends javax.swing.JFrame {
                     }
                 } else {
                     Message("Kích thước file upload tối đa"
-                            + Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / (1024 * 1024)
-                            + "MB.!!!");
+                            + ((Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024)
+                            + (Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) % 1024))
+                            + "KB.!!!");
                 }
-
             }
         } else {
             Message("Chức năng upload file của bạn đã bị chặn.!!!");
@@ -1805,7 +1867,7 @@ public class ClientUI extends javax.swing.JFrame {
         String permission = tblFolderShared.getValueAt(selectedRow, 5).toString();
 
         // check có quyền upload vào folder đc share này k
-        if (permission.trim().equals("all") || permission.trim().equals("u")) {   // có
+        if (permission.trim().equals("a") || permission.trim().equals("u")) {   // có
             // check user có đc quyền upload ko???
             if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
                     || userInfo.getPermissionId().trim().toLowerCase().equals("u")) {   // TH có
@@ -1862,8 +1924,9 @@ public class ClientUI extends javax.swing.JFrame {
                         // </editor-fold>
                     }
                     Message("Kích thước file upload tối đa"
-                            + Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / (1024 * 1024)
-                            + "MB.!!!");
+                            + ((Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024)
+                            + (Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) % 1024))
+                            + "KB.!!!");
                 }
             } else {
                 Message("Chức năng upload file của bạn đã bị chặn.!!!");
@@ -1883,7 +1946,8 @@ public class ClientUI extends javax.swing.JFrame {
         cmbFolderChild.removeAllItems();
         cmbFolderChild.addItem("--Choose a folder child--");
         listFolderChildInfo.forEach((folderChild) -> {
-            cmbFolderChild.addItem(folderChild.getFolderName());
+            String folderPath = folderChild.getFolderPath().substring(folderInfo.getFolderPath().length());
+            cmbFolderChild.addItem(folderPath);
         });
     }
     //</editor-fold>
@@ -2114,14 +2178,14 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel background;
     private javax.swing.JProgressBar bar_memories;
     private javax.swing.ButtonGroup btnGroup_Sex;
-    private javax.swing.JButton btnShare;
+    public static javax.swing.JButton btnShare;
     private javax.swing.JButton btnSignIn_Anonymous;
     private javax.swing.JCheckBox cbRemember;
     private javax.swing.JCheckBox cboRegis_FeMale;
     private javax.swing.JCheckBox cboRegis_Male;
-    private javax.swing.JComboBox<String> cmbFolderChild;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    public static javax.swing.JComboBox<String> cmbFolderChild;
+    public static javax.swing.JButton jButton1;
+    public static javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
@@ -2130,7 +2194,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
+    public static javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
@@ -2144,7 +2208,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
-    private javax.swing.JLabel jLabel28;
+    public static javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
@@ -2173,12 +2237,12 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblSayHelloUser;
     private javax.swing.JLabel lblSignIn;
     private javax.swing.JLabel lblSignout;
-    private javax.swing.JLabel lblTitlePath;
+    public static javax.swing.JLabel lblTitlePath;
     private javax.swing.JLabel lblTitlePath1;
     public static javax.swing.JLabel lblTotalNotification;
     private javax.swing.JLabel lblUploadNewFile;
     private javax.swing.JLabel lblVerifyInfo;
-    private javax.swing.JPanel pnlContainer;
+    public static javax.swing.JPanel pnlContainer;
     private javax.swing.JPanel pnlLogin;
     private javax.swing.JPanel pnlMain;
     private javax.swing.JPanel pnlMyCloud;

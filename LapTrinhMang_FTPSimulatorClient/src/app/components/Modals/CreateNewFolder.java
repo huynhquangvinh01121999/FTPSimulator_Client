@@ -120,9 +120,9 @@ public class CreateNewFolder extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String folderParentId = index.getFolderInfo().getFolderId();
+        String folderParentId = index.folderSelected.getFolderId();
         String emailUser = index.getUserInfo().getEmail();
-        String folderRootPath = index.getFolderInfo().getFolderPath();
+        String folderRootPath = index.folderSelected.getFolderPath();
         String folderChildName = txtFolderChildName.getText();
         if (folderChildName.trim().length() != 0) {
             String desPath = folderRootPath + "/" + folderChildName;
@@ -135,6 +135,7 @@ public class CreateNewFolder extends javax.swing.JDialog {
             folder.setRemainingSize("1,073,741,824"); // 1GB
             folder.setCreateAt(DateHelper.Now());
             folder.setFolderParentId(folderParentId);
+            folder.setFolderUserPermission("unlock");
 
             ClientThread.request("new_folder", folder);
             

@@ -473,8 +473,10 @@ public class ClientThread {
                     case "UPDATE_LOCK_UNLOCK_FEATURES": {
                         String data = (String) response.getObject();
                         String perId = data.split(";")[0];
-                        ClientUI.userInfo.setPermissionId(perId);
-                        LoadNotification(data.split(";")[1]);
+                        if (ClientUI.userInfo != null) {
+                            ClientUI.userInfo.setPermissionId(perId);
+                            LoadNotification(data.split(";")[1]);
+                        }
                         break;
                     }
                     // </editor-fold>
@@ -482,7 +484,15 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG LOCK/UNLOCK ANONYMOUS VS CLIENT BẤT KỲ - SERVER KHÓA/MỞ KHÓA QUYỀN TRUY CẬP ANONYMOUS CỦA CLIENT THEO PORT">
                     case "UPDATE_CLIENT_ANONYMOUS_PERMISSION": {
                         boolean permission = (boolean) response.getObject();
-                        ClientUI.ANONYMOUS_PERMISSION = permission;
+
+                        if (ClientUI.userInfo != null) {
+                            // kiểm tra client có đang login bằng quyền anonymous ko???
+                            // nếu có thì đá ra lun
+                            if (ClientUI.userInfo.getFullName().trim().equals("anonymous")) {
+                                ClientUI.ANONYMOUS_PERMISSION = permission;
+                                ClientUI.resetSignOut();
+                            }
+                        }
                         break;
                     }
                     // </editor-fold>
@@ -491,9 +501,11 @@ public class ClientThread {
                     case "LOCK_USER_ANONYMOUS_PERMISSION": {
                         String data = (String) response.getObject();
                         String permission = data.split(";")[0];
-                        ClientUI.userInfo.setAnonymousPermission(permission);
-                        ClientUI.jLabel24.setVisible(false);
-                        LoadNotification(data.split(";")[1]);
+                        if (ClientUI.userInfo != null) {
+                            ClientUI.userInfo.setAnonymousPermission(permission);
+                            ClientUI.jLabel24.setVisible(false);
+                            LoadNotification(data.split(";")[1]);
+                        }
                         break;
                     }
                     // </editor-fold>
@@ -502,9 +514,11 @@ public class ClientThread {
                     case "UNLOCK_USER_ANONYMOUS_PERMISSION": {
                         String data = (String) response.getObject();
                         String permission = data.split(";")[0];
-                        ClientUI.userInfo.setAnonymousPermission(permission);
-                        ClientUI.jLabel24.setVisible(true);
-                        LoadNotification(data.split(";")[1]);
+                        if (ClientUI.userInfo != null) {
+                            ClientUI.userInfo.setAnonymousPermission(permission);
+                            ClientUI.jLabel24.setVisible(true);
+                            LoadNotification(data.split(";")[1]);
+                        }
                         break;
                     }
                     // </editor-fold>
@@ -513,45 +527,50 @@ public class ClientThread {
                     case "UPDATE_FOLDER_SIZE_USER": {
                         String newSize = (String) response.getObject();
                         System.out.println(newSize);
+                        if (ClientUI.folderInfo != null) {
+                            // lấy ra dung lượng lưu trữ cũ của folder
+                            String oldSize = ClientUI.folderInfo.getSize().replaceAll(",", "");
 
-                        // lấy ra dung lượng lưu trữ cũ của folder
-                        String oldSize = ClientUI.folderInfo.getSize().replaceAll(",","");
+                            // lấy ra kích thước còn lại cũ của folder
+                            String oldRemanningSize = ClientUI.folderInfo.getRemainingSize().replaceAll(",", "");
 
-                        // lấy ra kích thước còn lại cũ của folder
-                        String oldRemanningSize = ClientUI.folderInfo.getRemainingSize().replaceAll(",","");
+                            // lấy ra kích thước folder đã sử dụng
+                            String usedSize = String.valueOf(Long.parseLong(oldSize) - Long.parseLong(oldRemanningSize));
 
-                        // lấy ra kích thước folder đã sử dụng
-                        String usedSize = String.valueOf(Long.parseLong(oldSize) - Long.parseLong(oldRemanningSize));
+                            // cập nhật lại dung lượng lưu trữ mới cho folder của user
+                            ClientUI.folderInfo.setSize(newSize);
 
-                        // cập nhật lại dung lượng lưu trữ mới cho folder của user
-                        ClientUI.folderInfo.setSize(newSize);
-
-                        // cập nhật dung lượng còn lại cho folder của user
-                        String newRemanningSize = String.valueOf(Long.parseLong(newSize) - Long.parseLong(usedSize));
-                        System.out.println(newRemanningSize);
-                        if (Long.parseLong(newRemanningSize) <= 0) {  // nếu âm -> gán = 0 luôn
-                            ClientUI.folderInfo.setRemainingSize("0");
-                        } else {
-                            ClientUI.folderInfo.setRemainingSize(newRemanningSize);
+                            // cập nhật dung lượng còn lại cho folder của user
+                            String newRemanningSize = String.valueOf(Long.parseLong(newSize) - Long.parseLong(usedSize));
+                            System.out.println(newRemanningSize);
+                            if (Long.parseLong(newRemanningSize) <= 0) {  // nếu âm -> gán = 0 luôn
+                                ClientUI.folderInfo.setRemainingSize("0");
+                            } else {
+                                ClientUI.folderInfo.setRemainingSize(newRemanningSize);
+                            }
                         }
                         break;
                     }
                     // </editor-fold>
-                    
+
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG CẬP NHẬT KÍCH THƯỚC TỐI ĐA UPLOAD FILE">
                     case "UPDATE_FILE_SIZE_UPLOAD": {
                         String newSizeUpload = (String) response.getObject();
                         System.out.println(newSizeUpload);
-                        ClientUI.userInfo.setFileSizeUpload(newSizeUpload);
+                        if (ClientUI.userInfo != null) {
+                            ClientUI.userInfo.setFileSizeUpload(newSizeUpload);
+                        }
                         break;
                     }
                     // </editor-fold>
-                    
+
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG CẬP NHẬT KÍCH THƯỚC TỐI ĐA DOWNLOAD FILE">
                     case "UPDATE_FILE_SIZE_DOWNLOAD": {
                         String newSizeDownload = (String) response.getObject();
                         System.out.println(newSizeDownload);
-                        ClientUI.userInfo.setFileSizeDownload(newSizeDownload);
+                        if (ClientUI.userInfo != null) {
+                            ClientUI.userInfo.setFileSizeDownload(newSizeDownload);
+                        }
                         break;
                     }
                     // </editor-fold>

@@ -46,7 +46,7 @@ public class FileHandler implements FileBase {
                 while (read < fileBytes.length && (numRead = diStream.read(fileBytes, read, fileBytes.length - read)) >= 0) {
                     read = read + numRead;
                 }
-                
+
                 fileEvent.setFileSize(len);
                 fileEvent.setFileData(fileBytes);
                 fileEvent.setStatus("Success");
@@ -105,7 +105,7 @@ public class FileHandler implements FileBase {
 
         long fileSizeUpoad = FileExtensions.convertSizeDouble(file.getAbsolutePath(), "kb");
 
-        long convertDataTypeFileSizeCompare = Long.parseLong(fileSizeCompare);
-        return (fileSizeUpoad <= convertDataTypeFileSizeCompare) ? true : false;
+        long convertDataTypeFileSizeCompare = (Long.parseLong(fileSizeCompare) / 1024) + (Long.parseLong(fileSizeCompare) % 1024);
+        return (fileSizeUpoad <= convertDataTypeFileSizeCompare);
     }
 }

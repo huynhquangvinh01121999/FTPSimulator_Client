@@ -484,12 +484,14 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG LOCK/UNLOCK ANONYMOUS VS CLIENT BẤT KỲ - SERVER KHÓA/MỞ KHÓA QUYỀN TRUY CẬP ANONYMOUS CỦA CLIENT THEO PORT">
                     case "UPDATE_CLIENT_ANONYMOUS_PERMISSION": {
                         boolean permission = (boolean) response.getObject();
-
+                        
+                        // cập nhật lại chế độ truy cập anonymous của client
+                        ClientUI.ANONYMOUS_PERMISSION = permission;
+                        
                         if (ClientUI.userInfo != null) {
                             // kiểm tra client có đang login bằng quyền anonymous ko???
                             // nếu có thì đá ra lun
-                            if (ClientUI.userInfo.getFullName().trim().equals("anonymous")) {
-                                ClientUI.ANONYMOUS_PERMISSION = permission;
+                            if (ClientUI.userInfo.getFullName().trim().equals("anonymous") && permission == false) {
                                 ClientUI.resetSignOut();
                             }
                         }

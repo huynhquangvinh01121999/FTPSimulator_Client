@@ -135,57 +135,67 @@ public class ClientUI extends javax.swing.JFrame {
     private void showDataMyFileCloud() {
         // set up table show list file of user
         tblMyFileCloudModel.setRowCount(0);
-        listFileInfo.forEach((file) -> {
-            tblMyFileCloudModel.addRow(new Object[]{
-                file.getFileName().trim(),
-                file.getPrexEmail().trim(),
-                file.getUploadAt().trim(),
-                file.getFileExtension().trim(),
-                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                file.getFileSize().trim(),
-                file.getFolderId().trim()
+        if (!listFileInfo.isEmpty() && listFileInfo != null) {
+            listFileInfo.forEach((file) -> {
+                tblMyFileCloudModel.addRow(new Object[]{
+                    file.getFileName().trim(),
+                    file.getPrexEmail().trim(),
+                    file.getUploadAt().trim(),
+                    file.getFileExtension().trim(),
+                    FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                    file.getFileSize().trim(),
+                    file.getFolderId().trim()
+                });
             });
-        });
+        }
 
         // set up show list folder child of user
         cmbFolderChild.removeAllItems();
         cmbFolderChild.addItem("--Choose a folder child--");
-        listFolderChildInfo.forEach((folder) -> {
-            String folderPath = folder.getFolderPath().substring(folderInfo.getFolderPath().length());
-            cmbFolderChild.addItem(folderPath);
-        });
+        if (folderInfo != null) {
+            if (!listFolderChildInfo.isEmpty()) {
+                listFolderChildInfo.forEach((folder) -> {
+                    String folderPath = folder.getFolderPath().substring(folderInfo.getFolderPath().length());
+                    cmbFolderChild.addItem(folderPath);
+                });
+            }
+        }
     }
 
     private void showDataMyFileShare() {
         tblFolderSharedModel.setRowCount(0);
-        listFolderShareInfo.forEach((folder) -> {
-            for (FolderShares folderShares : listFolderSharedInfo) {
-                if (folderShares.getFolderId().trim().equals(folder.getFolderId().trim())) {
-                    tblFolderSharedModel.addRow(new Object[]{
-                        folder.getFolderId(), folder.getFolderName(), folder.getCreateAt(),
-                        folder.getFolderPath(),
-                        folder.getEmail(),
-                        folderShares.getPermissionId()
-                    });
-                    break;
+        if (!listFolderShareInfo.isEmpty()) {
+            listFolderShareInfo.forEach((folder) -> {
+                for (FolderShares folderShares : listFolderSharedInfo) {
+                    if (folderShares.getFolderId().trim().equals(folder.getFolderId().trim())) {
+                        tblFolderSharedModel.addRow(new Object[]{
+                            folder.getFolderId(), folder.getFolderName(), folder.getCreateAt(),
+                            folder.getFolderPath(),
+                            folder.getEmail(),
+                            folderShares.getPermissionId()
+                        });
+                        break;
+                    }
                 }
-            }
 
-        });
+            });
+        }
 
         tblFileSharedModel.setRowCount(0);
-        listFileShareInfo.forEach((file) -> {
-            for (FileShares fileShares : listFileSharedInfo) {
-                if (fileShares.getFileId().trim().equals(file.getFileId().trim())) {
-                    tblFileSharedModel.addRow(new Object[]{
-                        file.getFileId(), file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
-                        FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                        file.getSourcePath(),
-                        fileShares.getPermissionId()
-                    });
+        if (!listFileShareInfo.isEmpty()) {
+            listFileShareInfo.forEach((file) -> {
+                for (FileShares fileShares : listFileSharedInfo) {
+                    if (fileShares.getFileId().trim().equals(file.getFileId().trim())) {
+                        tblFileSharedModel.addRow(new Object[]{
+                            file.getFileId(), file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
+                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                            file.getSourcePath(),
+                            fileShares.getPermissionId()
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     // </editor-fold>  
 
@@ -1068,6 +1078,8 @@ public class ClientUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lblRegisToLoginMouseClicked
 
     public static void resetSignOut() {
+
+        pnlLogin.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
         ClientThread.tranferLayout(pnlContainer, "pnlLogin");
         userInfo = null;
         folderInfo = null;
@@ -1202,21 +1214,23 @@ public class ClientUI extends javax.swing.JFrame {
                     // load file in folder children
                     tblMyFileCloudModel.setRowCount(0);
                     try {
-                        listFileInfo.forEach((file) -> {
-                            if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
-                                tblMyFileCloudModel.addRow(new Object[]{
-                                    file.getFileName().trim(),
-                                    file.getPrexEmail().trim(),
-                                    file.getUploadAt().trim(),
-                                    file.getFileExtension().trim(),
-                                    FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                                    file.getFileSize().trim(),
-                                    file.getFolderId().trim()
-                                });
-                            }
-                        });
+                        if (!listFileInfo.isEmpty()) {
+                            listFileInfo.forEach((file) -> {
+                                if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
+                                    tblMyFileCloudModel.addRow(new Object[]{
+                                        file.getFileName().trim(),
+                                        file.getPrexEmail().trim(),
+                                        file.getUploadAt().trim(),
+                                        file.getFileExtension().trim(),
+                                        FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                                        file.getFileSize().trim(),
+                                        file.getFolderId().trim()
+                                    });
+                                }
+                            });
+                        }
                     } catch (Exception ex) {
-                        System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+                        System.err.println("Xảy ra lỗi khi load data của user lên UI vì listFileInfo == null " + ex);
                     }
                     return;
                 } else {
@@ -1242,7 +1256,7 @@ public class ClientUI extends javax.swing.JFrame {
         try {
             showDataMyFileCloud();
         } catch (Exception ex) {
-            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -1252,7 +1266,7 @@ public class ClientUI extends javax.swing.JFrame {
             showDataMyFileCloud();
             IS_UPLOAD_SHARE_WITH_ME = false;
         } catch (Exception ex) {
-            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
         }
 
         // thiết lập đường dẫn root thư mục của client trên server
@@ -1297,21 +1311,23 @@ public class ClientUI extends javax.swing.JFrame {
             tblMyFileCloudModel.setRowCount(0);
 
             try {
-                listFileInfo.forEach((file) -> {
-                    if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
-                        tblMyFileCloudModel.addRow(new Object[]{
-                            file.getFileName().trim(),
-                            file.getPrexEmail().trim(),
-                            file.getUploadAt().trim(),
-                            file.getFileExtension().trim(),
-                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                            file.getFileSize().trim(),
-                            file.getFolderId().trim()
-                        });
-                    }
-                });
+                if (!listFileInfo.isEmpty()) {
+                    listFileInfo.forEach((file) -> {
+                        if (file.getSourcePath().trim().equals(locationYourFolder.trim())) {
+                            tblMyFileCloudModel.addRow(new Object[]{
+                                file.getFileName().trim(),
+                                file.getPrexEmail().trim(),
+                                file.getUploadAt().trim(),
+                                file.getFileExtension().trim(),
+                                FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                                file.getFileSize().trim(),
+                                file.getFolderId().trim()
+                            });
+                        }
+                    });
+                }
             } catch (Exception ex) {
-                System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+                System.err.println("Xảy ra lỗi khi load data của user lên UI vì listFileInfo bị null -" + ex);
             }
             ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
         } else {
@@ -1457,7 +1473,7 @@ public class ClientUI extends javax.swing.JFrame {
                 try {
                     showDataMyFileCloud();
                 } catch (Exception ex) {
-                    System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+                    System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
                 }
 
                 locationYourFolder = folderInfo.getFolderPath();
@@ -1528,10 +1544,10 @@ public class ClientUI extends javax.swing.JFrame {
 
                                 ClientThread.request("download_file", fileDownloadInfo);
                                 Message("Tải file xuống thành công.!!!");
-                            }else{
+                            } else {
                                 Message("Vui lòng chọn đường dẫn tải xuống.!!!");
                             }
-                        }else{
+                        } else {
                             Message("Vui lòng chọn đường dẫn tải xuống.!!!");
                         }
                     } else {
@@ -1662,7 +1678,7 @@ public class ClientUI extends javax.swing.JFrame {
             try {
                 showDataMyFileCloud();
             } catch (Exception ex) {
-                System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+                System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
             }
             int used = (Integer.parseInt(folderInfo.getSize().replaceAll(",", "")) - Integer.parseInt(folderInfo.getRemainingSize().replaceAll(",", ""))) / (1024 * 1024);
             jLabel5.setText("Used " + used + "MB out of "
@@ -1792,17 +1808,19 @@ public class ClientUI extends javax.swing.JFrame {
                         try {
                             // set up table show list file of user
                             tblMyFileCloudModel.setRowCount(0);
-                            listFileInfo.forEach((item) -> {
-                                tblMyFileCloudModel.addRow(new Object[]{
-                                    item.getFileName().trim(),
-                                    item.getPrexEmail().trim(),
-                                    item.getUploadAt().trim(),
-                                    item.getFileExtension().trim(),
-                                    FileExtensions.convertSizeFromSizeString(item.getFileSize(), "MB") + " MB",
-                                    item.getFileSize().trim(),
-                                    item.getFolderId().trim()
+                            if (!listFileInfo.isEmpty()) {
+                                listFileInfo.forEach((item) -> {
+                                    tblMyFileCloudModel.addRow(new Object[]{
+                                        item.getFileName().trim(),
+                                        item.getPrexEmail().trim(),
+                                        item.getUploadAt().trim(),
+                                        item.getFileExtension().trim(),
+                                        FileExtensions.convertSizeFromSizeString(item.getFileSize(), "MB") + " MB",
+                                        item.getFileSize().trim(),
+                                        item.getFolderId().trim()
+                                    });
                                 });
-                            });
+                            }
                         } catch (Exception ex) {
                             System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
                         }
@@ -2243,7 +2261,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblUploadNewFile;
     private javax.swing.JLabel lblVerifyInfo;
     public static javax.swing.JPanel pnlContainer;
-    private javax.swing.JPanel pnlLogin;
+    public static javax.swing.JPanel pnlLogin;
     private javax.swing.JPanel pnlMain;
     private javax.swing.JPanel pnlMyCloud;
     private javax.swing.JPanel pnlRegister;

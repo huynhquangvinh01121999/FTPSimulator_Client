@@ -20,8 +20,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.*;
@@ -90,6 +92,7 @@ public class ClientUI extends javax.swing.JFrame {
         pnlRegister.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
 
         setColumnTableModel();
+        lblLoading.setVisible(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -233,6 +236,7 @@ public class ClientUI extends javax.swing.JFrame {
         btnGroup_Sex = new javax.swing.ButtonGroup();
         pnlContainer = new javax.swing.JPanel();
         pnlLogin = new javax.swing.JPanel();
+        lblLoading = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jPanel1 = new RoundedPanel(100, new Color(51,37,78));
         jLabel10 = new javax.swing.JLabel();
@@ -323,6 +327,12 @@ public class ClientUI extends javax.swing.JFrame {
 
         pnlLogin.setBackground(new java.awt.Color(34, 92, 198));
         pnlLogin.setLayout(null);
+
+        lblLoading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblLoading.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/loading-bar.gif"))); // NOI18N
+        lblLoading.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        pnlLogin.add(lblLoading);
+        lblLoading.setBounds(450, 260, 200, 24);
 
         jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/LeftPanelBackGround.jpg"))); // NOI18N
@@ -1125,11 +1135,13 @@ public class ClientUI extends javax.swing.JFrame {
         if (!isVerify) {  // nếu chưa check
 
             ClientThread.request("verify_register", user);
+            lblLoading.setVisible(true);
             while (processHandler) {
                 System.out.println("watting handler register...");
                 // do not something...
                 // sẽ dừng khi hoàn tất tiến trình kiểm tra đầu vào
             }
+            lblLoading.setVisible(false);
             //  hiển thị thông báo
             Message(messageResult);
             if (statusResult) {     // nếu trạng thái kiểm tra đầu vào ok
@@ -1149,10 +1161,12 @@ public class ClientUI extends javax.swing.JFrame {
                 user.setStatus("unlock");
                 user.setCreateAt(DateHelper.Now());
                 ClientThread.request("register", user);
+                lblLoading.setVisible(true);
                 while (processHandler) {
                     System.out.println("watting handler register...");
                     // do not something...
                 }
+                lblLoading.setVisible(false);
                 Message(messageResult);
                 if (statusResult) {     // result ok
                     repaint();
@@ -1461,9 +1475,11 @@ public class ClientUI extends javax.swing.JFrame {
         if (ANONYMOUS_PERMISSION) {
             ClientThread.request("authenticate_anonymous_permission", "anonymous");
 
+            lblLoading.setVisible(true);
             while (processHandler) {
                 System.out.println("watting handler authenticate...");
             }
+            lblLoading.setVisible(false);
 
             Message(messageResult);
             if (statusResult) {
@@ -1555,6 +1571,8 @@ public class ClientUI extends javax.swing.JFrame {
                     }
                 }
             }
+        } else {
+            Message("Chức năng download của bạn đã bị chặn.!!!");
         }
     }//GEN-LAST:event_jButton4ActionPerformed
 
@@ -1660,16 +1678,13 @@ public class ClientUI extends javax.swing.JFrame {
         user.setEmail(txtLoginEmail.getText());
         user.setPassword(Encryptions.md5(String.valueOf(txtLoginPass.getPassword())));
         ClientThread.request("authenticate", user);
-        //ClientThread.sendMessage("authenticate");    // bắn thông báo login
-        //ClientThread.sendObjectUser(user);          // bắn thông tin user cho server để xử lý login
-
-//        Loading loading = new Loading(this, rootPaneCheckingEnabled);
-//        loading.show();
+        lblLoading.setVisible(true);
         while (processHandler) {
             System.out.println("watting handler authenticate...");
             // do not something...
             // sẽ dừng khi hoàn tất tiến trình authenticate
         }
+        lblLoading.setVisible(false);
         Message(messageResult);
         if (statusResult) {
             lblSayHelloUser.setText("Xin chào: " + userInfo.getFullName());
@@ -1882,76 +1897,81 @@ public class ClientUI extends javax.swing.JFrame {
     private void handleUploadFileToFolderShare() {
 
         int selectedRow = tblFolderShared.getSelectedRow();
-        String permission = tblFolderShared.getValueAt(selectedRow, 5).toString();
+        if (selectedRow == -1) {
+            Message("Vui lòng chọn thư mục cần upload");
+        } else {
+            String permission = tblFolderShared.getValueAt(selectedRow, 5).toString();
 
-        // check có quyền upload vào folder đc share này k
-        if (permission.trim().equals("a") || permission.trim().equals("u")) {   // có
-            // check user có đc quyền upload ko???
-            if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
-                    || userInfo.getPermissionId().trim().toLowerCase().equals("u")) {   // TH có
-                File file = FileExtensions.getFileChooser();    // open dialog and chọn file
+            // check có quyền upload vào folder đc share này k
+            if (permission.trim().equals("a") || permission.trim().equals("u")) {   // có
+                // check user có đc quyền upload ko???
+                if (userInfo.getPermissionId().trim().toLowerCase().equals("all")
+                        || userInfo.getPermissionId().trim().toLowerCase().equals("u")) {   // TH có
+                    File file = FileExtensions.getFileChooser();    // open dialog and chọn file
 
-                if (file != null) {
-                    // kiểm tra kích thước file
-                    if (FileHandler.compareFileSize(file, userInfo.getFileSizeUpload().trim())) {
-                        // <editor-fold defaultstate="collapsed" desc="Upload file vô folder share với quyền user">
-                        // kiểm tra dung lượng folder còn đủ ko
-                        if (isHaveEnoughSizeFolder(folderInfo.getRemainingSize(),
-                                String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())))) {
-                            Files fileInfo = new Files();
-                            fileInfo.setFileId(ThreadRandoms.uuid());
-                            fileInfo.setFileName(FileExtensions.getFileName(file));
-                            fileInfo.setSourcePath(locationYourFolder);
-                            fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
-                            fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
-                            fileInfo.setStatus("show");
+                    if (file != null) {
+                        // kiểm tra kích thước file
+                        if (FileHandler.compareFileSize(file, userInfo.getFileSizeUpload().trim())) {
+                            // <editor-fold defaultstate="collapsed" desc="Upload file vô folder share với quyền user">
+                            // kiểm tra dung lượng folder còn đủ ko
+                            if (isHaveEnoughSizeFolder(folderInfo.getRemainingSize(),
+                                    String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())))) {
+                                Files fileInfo = new Files();
+                                fileInfo.setFileId(ThreadRandoms.uuid());
+                                fileInfo.setFileName(FileExtensions.getFileName(file));
+                                fileInfo.setSourcePath(locationYourFolder);
+                                fileInfo.setFileSize(String.valueOf(FileExtensions.getFileSize(file.getAbsolutePath())));
+                                fileInfo.setFileExtension(FileExtensions.getFileExtension(file));
+                                fileInfo.setStatus("show");
 
-                            // get folderId share need upload
-                            String folderId = tblFolderShared.getValueAt(selectedRow, 0).toString();
-                            String emailParent = tblFolderShared.getValueAt(selectedRow, 4).toString();
-                            // PrexEmail  : abc@gmail.com
-                            // EmailShare : abc@gmail.com
-                            fileInfo.setFolderId(folderId);
-                            fileInfo.setUploadAt(DateHelper.Now());
-                            fileInfo.setPrexEmail(emailParent.split("@")[0]);
-                            fileInfo.setEmailShare(userInfo.getEmail());
+                                // get folderId share need upload
+                                String folderId = tblFolderShared.getValueAt(selectedRow, 0).toString();
+                                String emailParent = tblFolderShared.getValueAt(selectedRow, 4).toString();
+                                // PrexEmail  : abc@gmail.com
+                                // EmailShare : abc@gmail.com
+                                fileInfo.setFolderId(folderId);
+                                fileInfo.setUploadAt(DateHelper.Now());
+                                fileInfo.setPrexEmail(emailParent.split("@")[0]);
+                                fileInfo.setEmailShare(userInfo.getEmail());
 
-                            ClientThread.requestFileSender("upload_file_share", fileInfo, file, locationYourFolder);
+                                ClientThread.requestFileSender("upload_file_share", fileInfo, file, locationYourFolder);
 
-                            // check file name exist
-                            boolean isExist = false;
-                            for (Files item : listFileShareInfo) {
-                                if (item.getFileName().equals(fileInfo.getFileName())
-                                        && item.getSourcePath().trim().equals(fileInfo.getSourcePath().trim())) {
-                                    item.setFileSize(fileInfo.getFileSize());
-                                    item.setFileExtension(fileInfo.getFileExtension());
-                                    item.setUploadAt(fileInfo.getUploadAt());
-                                    isExist = true;
-                                    break;
+                                // check file name exist
+                                boolean isExist = false;
+                                for (Files item : listFileShareInfo) {
+                                    if (item.getFileName().equals(fileInfo.getFileName())
+                                            && item.getSourcePath().trim().equals(fileInfo.getSourcePath().trim())) {
+                                        item.setFileSize(fileInfo.getFileSize());
+                                        item.setFileExtension(fileInfo.getFileExtension());
+                                        item.setUploadAt(fileInfo.getUploadAt());
+                                        isExist = true;
+                                        break;
+                                    }
                                 }
+                                if (!isExist) {
+                                    listFileShareInfo.add(fileInfo);
+                                }
+                                showDataMyFileShare();
+                                Message("Tải file lên thành công.!!!");
+                                return;
                             }
-                            if (!isExist) {
-                                listFileShareInfo.add(fileInfo);
-                            }
-                            showDataMyFileShare();
-                            Message("Tải file lên thành công.!!!");
+                            Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
                             return;
+                            // </editor-fold>
                         }
-                        Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
-                        return;
-                        // </editor-fold>
+                        Message("Kích thước file upload tối đa"
+                                + ((Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024)
+                                + (Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) % 1024))
+                                + "KB.!!!");
                     }
-                    Message("Kích thước file upload tối đa"
-                            + ((Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024)
-                            + (Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) % 1024))
-                            + "KB.!!!");
+                } else {
+                    Message("Chức năng upload file của bạn đã bị chặn.!!!");
                 }
             } else {
-                Message("Chức năng upload file của bạn đã bị chặn.!!!");
+                Message("Bạn không có quyền upload file vào thư mục chia sẻ này.!!!");
             }
-        } else {
-            Message("Bạn không có quyền upload file vào thư mục chia sẻ này.!!!");
         }
+
     }
     //</editor-fold>
 
@@ -2250,6 +2270,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JTextField jTextField1;
     private com.toedter.calendar.JDateChooser jdtRegis_dbo;
+    public static javax.swing.JLabel lblLoading;
     private javax.swing.JLabel lblRegisToLogin;
     private javax.swing.JLabel lblRegister;
     private javax.swing.JLabel lblSayHelloUser;

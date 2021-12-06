@@ -1148,6 +1148,9 @@ public class ClientUI extends javax.swing.JFrame {
                 lblVerifyInfo.setVisible(true);
                 txtVerifyCode.setVisible(true);
                 isVerify = true;    // set giá trị thành đã check
+                txtRegis_Email.setEnabled(false);
+                txtRegis_Pass.setEnabled(false);
+                txtRegis_FullName.setEnabled(false);
             }
         } else {
             // kiểm tra giá trị của verifyCode
@@ -1180,6 +1183,10 @@ public class ClientUI extends javax.swing.JFrame {
                         verifyCode = 0;
                         lblVerifyInfo.setVisible(false);
                         txtVerifyCode.setVisible(false);
+
+                        txtRegis_Email.setEnabled(true);
+                        txtRegis_Pass.setEnabled(true);
+                        txtRegis_FullName.setEnabled(true);
                     }
                 } else {
                     Message("Mã xác thực đã hết hạn. Vui lòng lấy mã lại.!!!");
@@ -1188,6 +1195,10 @@ public class ClientUI extends javax.swing.JFrame {
                     lblVerifyInfo.setVisible(false);
                     txtVerifyCode.setVisible(false);
                     txtVerifyCode.setText("");
+
+                    txtRegis_Email.setEnabled(true);
+                    txtRegis_Pass.setEnabled(true);
+                    txtRegis_FullName.setEnabled(true);
                 }
             } else {
                 Message("Mã xác thực không chính xác.!!!");

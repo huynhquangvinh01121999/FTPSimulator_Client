@@ -9,6 +9,9 @@ import app.ProcessHandle.ClientThread;
 import app.components.ClientUI;
 import features.utilities.DateHelper;
 import features.utilities.ThreadRandoms;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import javax.swing.JOptionPane;
 import models.Folders;
 
@@ -120,34 +123,54 @@ public class CreateNewFolder extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String permission = index.folderSelected.getFolderUserPermission().trim();
         String folderParentId = index.folderSelected.getFolderId();
         String emailUser = index.getUserInfo().getEmail();
         String folderRootPath = index.folderSelected.getFolderPath();
         String folderChildName = txtFolderChildName.getText();
-        if (folderChildName.trim().length() != 0) {
-            String desPath = folderRootPath + "/" + folderChildName;
-            Folders folder = new Folders();
-            folder.setFolderId(ThreadRandoms.uuid());
-            folder.setFolderName(folderChildName);
-            folder.setFolderPath(desPath);
-            folder.setEmail(emailUser);
-            folder.setSize("1,073,741,824");    // 1GB
-            folder.setRemainingSize("1,073,741,824"); // 1GB
-            folder.setCreateAt(DateHelper.Now());
-            folder.setFolderParentId(folderParentId);
-            folder.setFolderUserPermission("unlock");
+        if (permission.equals("unlock")) {
+            if (folderChildName.trim().length() != 0) {
+                if (findSpecialRegex(folderChildName.trim())) {
+                    JOptionPane.showMessageDialog(this, "Tên thư mục không được chứa ký tự đặc biệt.!!!");
+                } else {
+                    String desPath = folderRootPath + "/" + removeAccent(folderChildName);
+                    Folders folder = new Folders();
+                    folder.setFolderId(ThreadRandoms.uuid());
+                    folder.setFolderName(removeAccent(folderChildName));
+                    folder.setFolderPath(desPath);
+                    folder.setEmail(emailUser);
+                    folder.setSize("1,073,741,824");    // 1GB
+                    folder.setRemainingSize("1,073,741,824"); // 1GB
+                    folder.setCreateAt(DateHelper.Now());
+                    folder.setFolderParentId(folderParentId);
+                    folder.setFolderUserPermission("unlock");
 
-            ClientThread.request("new_folder", folder);
-            
-//            ClientThread.sendMessage("new_folder");
-//            ClientThread.sendObjectFolder(folder);
-            index.addFolderChildToListFolderChild(folder);
-            JOptionPane.showMessageDialog(this, "Tạo thư mục thành công.!!!");
-            this.dispose();
+                    ClientThread.request("new_folder", folder);
+                    index.addFolderChildToListFolderChild(folder);
+                    JOptionPane.showMessageDialog(this, "Tạo thư mục thành công.!!!");
+                    this.dispose();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập tên thư mục.!!!");
+            }
         } else {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên thư mục.!!!");
+            JOptionPane.showMessageDialog(this, "Bạn không thể tạo thêm thư mục mới trong thư mục này.\nVì bạn đã bị lock quyền user trong folder này.\nVui lòng quay lại sau.!!!");
         }
+
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private boolean findSpecialRegex(String str) {
+        Pattern special = Pattern.compile("[!@#$%&*()+=|<>?{}\\[\\]~]");
+        Matcher hasSpecial = special.matcher(str);
+        return hasSpecial.find();
+    }
+    
+    private String removeAccent(String s) {
+        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        temp = pattern.matcher(temp).replaceAll("");
+        return temp.replaceAll("đ", "d");
+    }
 
     /**
      * @param args the command line arguments

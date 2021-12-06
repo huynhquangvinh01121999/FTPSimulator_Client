@@ -25,6 +25,7 @@ import models.Files;
 import models.Folders;
 import models.HandleResult;
 import models.ObjectRequest;
+import models.UpdateResultFolderUserPermission;
 
 /**
  *
@@ -484,10 +485,10 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG LOCK/UNLOCK ANONYMOUS VS CLIENT BẤT KỲ - SERVER KHÓA/MỞ KHÓA QUYỀN TRUY CẬP ANONYMOUS CỦA CLIENT THEO PORT">
                     case "UPDATE_CLIENT_ANONYMOUS_PERMISSION": {
                         boolean permission = (boolean) response.getObject();
-                        
+
                         // cập nhật lại chế độ truy cập anonymous của client
                         ClientUI.ANONYMOUS_PERMISSION = permission;
-                        
+
                         if (ClientUI.userInfo != null) {
                             // kiểm tra client có đang login bằng quyền anonymous ko???
                             // nếu có thì đá ra lun
@@ -505,7 +506,14 @@ public class ClientThread {
                         String permission = data.split(";")[0];
                         if (ClientUI.userInfo != null) {
                             ClientUI.userInfo.setAnonymousPermission(permission);
-                            ClientUI.jLabel24.setVisible(false);
+
+                            ClientUI.lblPublicCloud.setVisible(false);
+                            ClientUI.showDataMyFileCloud();
+                            ClientUI.lblTitlePath.setText("My Cloud ");
+                            // redirect view
+                            tranferLayout(ClientUI.pnlContainer, "pnlMain");
+                            tranferLayout(ClientUI.pnlSection, "pnlMyCloud");
+
                             LoadNotification(data.split(";")[1]);
                         }
                         break;
@@ -518,7 +526,12 @@ public class ClientThread {
                         String permission = data.split(";")[0];
                         if (ClientUI.userInfo != null) {
                             ClientUI.userInfo.setAnonymousPermission(permission);
-                            ClientUI.jLabel24.setVisible(true);
+                            ClientUI.lblPublicCloud.setVisible(true);
+                            ClientUI.showDataMyFileCloud();
+                            ClientUI.lblTitlePath.setText("My Cloud ");
+                            // redirect view
+                            tranferLayout(ClientUI.pnlContainer, "pnlMain");
+                            tranferLayout(ClientUI.pnlSection, "pnlMyCloud");
                             LoadNotification(data.split(";")[1]);
                         }
                         break;
@@ -579,19 +592,31 @@ public class ClientThread {
 
                     // <editor-fold defaultstate="collapsed" desc="SERVER CẬP NHẬT LẠI QUYỀN USER CHO CÁC FOLDER CON">
                     case "UPDATE_FOLDER_CHILD_USER_PERMISSION": {
-                        String data = (String) response.getObject();
-                        String folderId = data.split(";")[0];
-                        String permission = data.split(";")[1];
-                        if (ClientUI.listFolderChildInfo.isEmpty()) {
+                        UpdateResultFolderUserPermission data
+                                = (UpdateResultFolderUserPermission) response.getObject();
+                        String folderIdSelected = data.getFolderIdSelected();
+                        String permission = data.getPermission();
+
+                        if (!ClientUI.listFolderChildInfo.isEmpty()) {
+                            // update lại folder đc chọn
                             for (Folders folder : ClientUI.listFolderChildInfo) {
-                                if (folder.getFolderId().trim().equals(folderId)) {
+                                if (folder.getFolderId().trim().equals(folderIdSelected)) {
                                     folder.setFolderUserPermission(permission);
                                     break;
                                 }
                             }
+
+                            // update lại các folder con bên trong
+                            for (Folders folder : ClientUI.listFolderChildInfo) {
+                                for (Folders itemChild : data.getListFolderChild()) {
+                                    if (folder.getFolderId().trim().equals(itemChild.getFolderId().trim())) {
+                                        folder.setFolderUserPermission(permission);
+                                    }
+                                }
+                            }
                         }
                         // load thông báo
-                        LoadNotification(data.split(";")[2]);
+                        LoadNotification(data.getMessage());
                         break;
                     }
                     // </editor-fold>

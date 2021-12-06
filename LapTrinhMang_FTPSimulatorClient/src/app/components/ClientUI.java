@@ -48,6 +48,7 @@ public class ClientUI extends javax.swing.JFrame {
     // code for register handle
     private static boolean isVerify = false;
     private static int verifyCode;
+    private static String timestamp = "";
 
     // return info when after login
     public static Users userInfo;
@@ -77,7 +78,7 @@ public class ClientUI extends javax.swing.JFrame {
     // location my folder on server
     private static String locationYourFolder = null;
 
-    private DefaultTableModel tblMyFileCloudModel;
+    private static DefaultTableModel tblMyFileCloudModel;
     private DefaultTableModel tblFolderSharedModel;
     private DefaultTableModel tblFileSharedModel;
 
@@ -92,7 +93,7 @@ public class ClientUI extends javax.swing.JFrame {
         pnlRegister.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
 
         setColumnTableModel();
-        lblLoading.setVisible(false);
+        lblLoading_Register.setVisible(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -135,7 +136,7 @@ public class ClientUI extends javax.swing.JFrame {
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="load data model">
-    private void showDataMyFileCloud() {
+    public static void showDataMyFileCloud() {
         // set up table show list file of user
         tblMyFileCloudModel.setRowCount(0);
         if (!listFileInfo.isEmpty() && listFileInfo != null) {
@@ -236,7 +237,6 @@ public class ClientUI extends javax.swing.JFrame {
         btnGroup_Sex = new javax.swing.ButtonGroup();
         pnlContainer = new javax.swing.JPanel();
         pnlLogin = new javax.swing.JPanel();
-        lblLoading = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jPanel1 = new RoundedPanel(100, new Color(51,37,78));
         jLabel10 = new javax.swing.JLabel();
@@ -256,6 +256,7 @@ public class ClientUI extends javax.swing.JFrame {
         jPanel3 = new RoundedPanel(100, new Color(83,187,98));
         jLabel16 = new javax.swing.JLabel();
         pnlRegister = new javax.swing.JPanel();
+        lblLoading_Register = new javax.swing.JLabel();
         jPanel2 = new RoundedPanel(100, new Color(51,37,78));
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
@@ -293,11 +294,11 @@ public class ClientUI extends javax.swing.JFrame {
         tblMyFileCloud = new javax.swing.JTable();
         lblTitlePath = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jLabel28 = new javax.swing.JLabel();
+        lblTitleCmbFolderChild = new javax.swing.JLabel();
         cmbFolderChild = new javax.swing.JComboBox<>();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnCreateNewFolder = new javax.swing.JButton();
+        btnFolderRoot = new javax.swing.JButton();
+        btnDownload = new javax.swing.JButton();
         btnShare = new javax.swing.JButton();
         pnlShareWithMe = new javax.swing.JPanel();
         lblTitlePath1 = new javax.swing.JLabel();
@@ -310,9 +311,9 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel29 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
+        lblShareWithMe = new javax.swing.JLabel();
         jSeparator6 = new javax.swing.JSeparator();
-        jLabel24 = new javax.swing.JLabel();
+        lblPublicCloud = new javax.swing.JLabel();
         bar_memories = new javax.swing.JProgressBar();
         jLabel25 = new javax.swing.JLabel();
         lblTotalNotification = new javax.swing.JLabel();
@@ -327,12 +328,6 @@ public class ClientUI extends javax.swing.JFrame {
 
         pnlLogin.setBackground(new java.awt.Color(34, 92, 198));
         pnlLogin.setLayout(null);
-
-        lblLoading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblLoading.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/loading-bar.gif"))); // NOI18N
-        lblLoading.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        pnlLogin.add(lblLoading);
-        lblLoading.setBounds(450, 260, 200, 24);
 
         jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/LeftPanelBackGround.jpg"))); // NOI18N
@@ -480,6 +475,12 @@ public class ClientUI extends javax.swing.JFrame {
 
         pnlRegister.setBackground(new java.awt.Color(255, 255, 255));
         pnlRegister.setLayout(null);
+
+        lblLoading_Register.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblLoading_Register.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/loading-bar.gif"))); // NOI18N
+        lblLoading_Register.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        pnlRegister.add(lblLoading_Register);
+        lblLoading_Register.setBounds(475, 255, 200, 24);
 
         jPanel2.setBackground(new java.awt.Color(67, 0, 66));
         jPanel2.setLayout(null);
@@ -753,10 +754,10 @@ public class ClientUI extends javax.swing.JFrame {
         pnlMyCloud.add(jLabel4);
         jLabel4.setBounds(23, 165, 140, 30);
 
-        jLabel28.setFont(new java.awt.Font("Script MT Bold", 0, 17)); // NOI18N
-        jLabel28.setText("Folder Childs:");
-        pnlMyCloud.add(jLabel28);
-        jLabel28.setBounds(250, 55, 130, 20);
+        lblTitleCmbFolderChild.setFont(new java.awt.Font("Script MT Bold", 0, 17)); // NOI18N
+        lblTitleCmbFolderChild.setText("Folder Childs:");
+        pnlMyCloud.add(lblTitleCmbFolderChild);
+        lblTitleCmbFolderChild.setBounds(250, 55, 130, 20);
 
         cmbFolderChild.setBackground(new java.awt.Color(212, 255, 255));
         cmbFolderChild.setFont(new java.awt.Font("Tempus Sans ITC", 1, 14)); // NOI18N
@@ -769,48 +770,48 @@ public class ClientUI extends javax.swing.JFrame {
         pnlMyCloud.add(cmbFolderChild);
         cmbFolderChild.setBounds(250, 80, 260, 50);
 
-        jButton1.setBackground(new java.awt.Color(212, 255, 255));
-        jButton1.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-add-23.png"))); // NOI18N
-        jButton1.setText("New folder");
-        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jButton1.setBorderPainted(false);
-        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnCreateNewFolder.setBackground(new java.awt.Color(212, 255, 255));
+        btnCreateNewFolder.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
+        btnCreateNewFolder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-add-23.png"))); // NOI18N
+        btnCreateNewFolder.setText("New folder");
+        btnCreateNewFolder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        btnCreateNewFolder.setBorderPainted(false);
+        btnCreateNewFolder.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCreateNewFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnCreateNewFolderActionPerformed(evt);
             }
         });
-        pnlMyCloud.add(jButton1);
-        jButton1.setBounds(640, 10, 130, 33);
+        pnlMyCloud.add(btnCreateNewFolder);
+        btnCreateNewFolder.setBounds(640, 10, 130, 33);
 
-        jButton2.setBackground(new java.awt.Color(212, 255, 255));
-        jButton2.setFont(new java.awt.Font("Tempus Sans ITC", 1, 19)); // NOI18N
-        jButton2.setText("Folder Root");
-        jButton2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jButton2.setBorderPainted(false);
-        jButton2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnFolderRoot.setBackground(new java.awt.Color(212, 255, 255));
+        btnFolderRoot.setFont(new java.awt.Font("Tempus Sans ITC", 1, 19)); // NOI18N
+        btnFolderRoot.setText("Folder Root");
+        btnFolderRoot.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        btnFolderRoot.setBorderPainted(false);
+        btnFolderRoot.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnFolderRoot.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnFolderRootActionPerformed(evt);
             }
         });
-        pnlMyCloud.add(jButton2);
-        jButton2.setBounds(20, 80, 180, 50);
+        pnlMyCloud.add(btnFolderRoot);
+        btnFolderRoot.setBounds(20, 80, 180, 50);
 
-        jButton3.setBackground(new java.awt.Color(212, 255, 255));
-        jButton3.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-downloadfile-25.png"))); // NOI18N
-        jButton3.setText(" Download");
-        jButton3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jButton3.setBorderPainted(false);
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        btnDownload.setBackground(new java.awt.Color(212, 255, 255));
+        btnDownload.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
+        btnDownload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-downloadfile-25.png"))); // NOI18N
+        btnDownload.setText(" Download");
+        btnDownload.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        btnDownload.setBorderPainted(false);
+        btnDownload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                btnDownloadActionPerformed(evt);
             }
         });
-        pnlMyCloud.add(jButton3);
-        jButton3.setBounds(640, 60, 130, 33);
+        pnlMyCloud.add(btnDownload);
+        btnDownload.setBounds(640, 60, 130, 33);
 
         btnShare.setBackground(new java.awt.Color(212, 255, 255));
         btnShare.setFont(new java.awt.Font("Tempus Sans ITC", 1, 13)); // NOI18N
@@ -972,36 +973,36 @@ public class ClientUI extends javax.swing.JFrame {
         pnlMain.add(jLabel23);
         jLabel23.setBounds(50, 200, 180, 40);
 
-        jLabel15.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
-        jLabel15.setForeground(new java.awt.Color(255, 255, 254));
-        jLabel15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icons-share-25.png"))); // NOI18N
-        jLabel15.setText("   Share with me");
-        jLabel15.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jLabel15.addMouseListener(new java.awt.event.MouseAdapter() {
+        lblShareWithMe.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
+        lblShareWithMe.setForeground(new java.awt.Color(255, 255, 254));
+        lblShareWithMe.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icons-share-25.png"))); // NOI18N
+        lblShareWithMe.setText("   Share with me");
+        lblShareWithMe.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblShareWithMe.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel15MouseClicked(evt);
+                lblShareWithMeMouseClicked(evt);
             }
         });
-        pnlMain.add(jLabel15);
-        jLabel15.setBounds(48, 260, 180, 40);
+        pnlMain.add(lblShareWithMe);
+        lblShareWithMe.setBounds(48, 260, 180, 40);
 
         jSeparator6.setBackground(new java.awt.Color(204, 204, 204));
         jSeparator6.setForeground(new java.awt.Color(204, 204, 204));
         pnlMain.add(jSeparator6);
         jSeparator6.setBounds(10, 393, 270, 10);
 
-        jLabel24.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
-        jLabel24.setForeground(new java.awt.Color(255, 255, 254));
-        jLabel24.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-public-cloud-25.png"))); // NOI18N
-        jLabel24.setText("   Public Cloud");
-        jLabel24.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jLabel24.addMouseListener(new java.awt.event.MouseAdapter() {
+        lblPublicCloud.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
+        lblPublicCloud.setForeground(new java.awt.Color(255, 255, 254));
+        lblPublicCloud.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-public-cloud-25.png"))); // NOI18N
+        lblPublicCloud.setText("   Public Cloud");
+        lblPublicCloud.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblPublicCloud.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel24MouseClicked(evt);
+                lblPublicCloudMouseClicked(evt);
             }
         });
-        pnlMain.add(jLabel24);
-        jLabel24.setBounds(50, 320, 180, 40);
+        pnlMain.add(lblPublicCloud);
+        lblPublicCloud.setBounds(50, 320, 180, 40);
 
         bar_memories.setBackground(new java.awt.Color(51, 51, 51));
         bar_memories.setForeground(new java.awt.Color(153, 153, 255));
@@ -1102,12 +1103,12 @@ public class ClientUI extends javax.swing.JFrame {
         listPermissionInfo = null;
         locationYourFolder = null;
 
-        jLabel15.setVisible(true);
-        jLabel24.setVisible(true);
-        jLabel28.setVisible(true);
-        jButton2.setVisible(true);
+        lblShareWithMe.setVisible(true);
+        lblPublicCloud.setVisible(true);
+        lblTitleCmbFolderChild.setVisible(true);
+        btnFolderRoot.setVisible(true);
         cmbFolderChild.setVisible(true);
-        jButton1.setVisible(true);
+        btnCreateNewFolder.setVisible(true);
         btnShare.setVisible(true);
 
         lblTitlePath.setText("My Cloud ");
@@ -1135,13 +1136,11 @@ public class ClientUI extends javax.swing.JFrame {
         if (!isVerify) {  // nếu chưa check
 
             ClientThread.request("verify_register", user);
-            lblLoading.setVisible(true);
             while (processHandler) {
                 System.out.println("watting handler register...");
                 // do not something...
                 // sẽ dừng khi hoàn tất tiến trình kiểm tra đầu vào
             }
-            lblLoading.setVisible(false);
             //  hiển thị thông báo
             Message(messageResult);
             if (statusResult) {     // nếu trạng thái kiểm tra đầu vào ok
@@ -1151,33 +1150,44 @@ public class ClientUI extends javax.swing.JFrame {
                 isVerify = true;    // set giá trị thành đã check
             }
         } else {
+            // kiểm tra giá trị của verifyCode
             if (txtVerifyCode.getText().trim().equals(String.valueOf(verifyCode).trim())) {
-                if (cboRegis_Male.isSelected()) {
-                    user.setSex("Male");
+
+                // kiểm tra thời gian của verifyCode còn hạn ko
+                if (DateHelper.compare(timestamp)) {
+                    if (cboRegis_Male.isSelected()) {
+                        user.setSex("Male");
+                    } else {
+                        user.setSex("FeMale");
+                    }
+                    user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
+                    user.setStatus("unlock");
+                    user.setCreateAt(DateHelper.Now());
+                    ClientThread.request("register", user);
+                    while (processHandler) {
+                        System.out.println("watting handler register...");
+                        // do not something...
+                    }
+                    Message(messageResult);
+                    if (statusResult) {     // result ok
+                        repaint();
+                        ClientThread.tranferLayout(pnlContainer, "pnlLogin");
+                        txtRegis_Email.setText("");
+                        txtRegis_Pass.setText("");
+                        txtRegis_FullName.setText("");
+                        txtVerifyCode.setText("");
+                        isVerify = false;
+                        verifyCode = 0;
+                        lblVerifyInfo.setVisible(false);
+                        txtVerifyCode.setVisible(false);
+                    }
                 } else {
-                    user.setSex("FeMale");
-                }
-                user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
-                user.setStatus("unlock");
-                user.setCreateAt(DateHelper.Now());
-                ClientThread.request("register", user);
-                lblLoading.setVisible(true);
-                while (processHandler) {
-                    System.out.println("watting handler register...");
-                    // do not something...
-                }
-                lblLoading.setVisible(false);
-                Message(messageResult);
-                if (statusResult) {     // result ok
-                    repaint();
-                    ClientThread.tranferLayout(pnlContainer, "pnlLogin");
-                    txtRegis_Email.setText("");
-                    txtRegis_Pass.setText("");
-                    txtRegis_FullName.setText("");
+                    Message("Mã xác thực đã hết hạn. Vui lòng lấy mã lại.!!!");
                     isVerify = false;
                     verifyCode = 0;
                     lblVerifyInfo.setVisible(false);
                     txtVerifyCode.setVisible(false);
+                    txtVerifyCode.setText("");
                 }
             } else {
                 Message("Mã xác thực không chính xác.!!!");
@@ -1200,10 +1210,10 @@ public class ClientUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_lblUploadNewFileMouseClicked
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnCreateNewFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateNewFolderActionPerformed
         CreateNewFolder dialog = new CreateNewFolder(this, rootPaneCheckingEnabled);
         dialog.show();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnCreateNewFolderActionPerformed
 
     private void cmbFolderChildActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFolderChildActionPerformed
         String compare = "--Choose a folder child--";
@@ -1261,7 +1271,7 @@ public class ClientUI extends javax.swing.JFrame {
         prexEmailInfo = userInfo.getEmail().split("@")[0];
     }//GEN-LAST:event_cmbFolderChildActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnFolderRootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFolderRootActionPerformed
         lblTitlePath.setText("My Cloud ");
         locationYourFolder = folderInfo.getFolderPath();
         folderSelected = folderInfo;
@@ -1272,7 +1282,7 @@ public class ClientUI extends javax.swing.JFrame {
         } catch (Exception ex) {
             System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnFolderRootActionPerformed
 
     private void jLabel23MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel23MouseClicked
         prexEmailInfo = userInfo.getEmail().split("@")[0];
@@ -1294,7 +1304,7 @@ public class ClientUI extends javax.swing.JFrame {
         ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
     }//GEN-LAST:event_jLabel23MouseClicked
 
-    private void jLabel24MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel24MouseClicked
+    private void lblPublicCloudMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPublicCloudMouseClicked
 
         IS_UPLOAD_SHARE_WITH_ME = false;
 
@@ -1348,9 +1358,9 @@ public class ClientUI extends javax.swing.JFrame {
             Message("Bạn không có quyền truy cập chế độ anonymous.!!!");
         }
 
-    }//GEN-LAST:event_jLabel24MouseClicked
+    }//GEN-LAST:event_lblPublicCloudMouseClicked
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void btnDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDownloadActionPerformed
 
         // KHI ĐĂNG NHẬP VỚI QUYỀN ANONYMOUS
         // KHI ĐĂNG NHẬP VỚI QUYỀN USER
@@ -1468,18 +1478,16 @@ public class ClientUI extends javax.swing.JFrame {
             Message("Chức năng download của bạn đã bị chặn.!!!");
         }
 
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_btnDownloadActionPerformed
 
     private void btnSignIn_AnonymousActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSignIn_AnonymousActionPerformed
 
         if (ANONYMOUS_PERMISSION) {
             ClientThread.request("authenticate_anonymous_permission", "anonymous");
 
-            lblLoading.setVisible(true);
             while (processHandler) {
                 System.out.println("watting handler authenticate...");
             }
-            lblLoading.setVisible(false);
 
             Message(messageResult);
             if (statusResult) {
@@ -1496,12 +1504,12 @@ public class ClientUI extends javax.swing.JFrame {
                 folderSelected = folderInfo;
                 prexEmailInfo = "anonymous";
 
-                jLabel15.setVisible(false);
-                jLabel24.setVisible(false);
-                jLabel28.setVisible(false);
-                jButton2.setVisible(false);
+                lblShareWithMe.setVisible(false);
+                lblPublicCloud.setVisible(false);
+                lblTitleCmbFolderChild.setVisible(false);
+                btnFolderRoot.setVisible(false);
                 cmbFolderChild.setVisible(false);
-                jButton1.setVisible(false);
+                btnCreateNewFolder.setVisible(false);
                 btnShare.setVisible(false);
                 lblTitlePath.setText("Public Cloud ");
                 // redirect view
@@ -1576,7 +1584,7 @@ public class ClientUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton4ActionPerformed
 
-    private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
+    private void lblShareWithMeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblShareWithMeMouseClicked
         try {
             showDataMyFileShare();
             IS_UPLOAD_SHARE_WITH_ME = true;
@@ -1587,7 +1595,7 @@ public class ClientUI extends javax.swing.JFrame {
         // redirect view
         repaint();
         ClientThread.tranferLayout(pnlSection, "pnlShareWithMe");
-    }//GEN-LAST:event_jLabel15MouseClicked
+    }//GEN-LAST:event_lblShareWithMeMouseClicked
 
     private void tblFolderSharedMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblFolderSharedMouseClicked
         int selectedRow = tblFolderShared.getSelectedRow();
@@ -1642,6 +1650,7 @@ public class ClientUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Thiết lập mã xác thực gửi về từ server">
     public static void setVerifyCode(int code) {
         verifyCode = code;
+        timestamp = DateHelper.Now_Ver2();
     }
     //</editor-fold>
 
@@ -1678,13 +1687,11 @@ public class ClientUI extends javax.swing.JFrame {
         user.setEmail(txtLoginEmail.getText());
         user.setPassword(Encryptions.md5(String.valueOf(txtLoginPass.getPassword())));
         ClientThread.request("authenticate", user);
-        lblLoading.setVisible(true);
         while (processHandler) {
             System.out.println("watting handler authenticate...");
             // do not something...
             // sẽ dừng khi hoàn tất tiến trình authenticate
         }
-        lblLoading.setVisible(false);
         Message(messageResult);
         if (statusResult) {
             lblSayHelloUser.setText("Xin chào: " + userInfo.getFullName());
@@ -1708,7 +1715,7 @@ public class ClientUI extends javax.swing.JFrame {
             prexEmailInfo = userInfo.getEmail().split("@")[0];
 
             if (userInfo.getAnonymousPermission().trim().equals("lock")) {
-                jLabel24.setVisible(false);
+                lblPublicCloud.setVisible(false);
             }
 
             // redirect view
@@ -2215,6 +2222,9 @@ public class ClientUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel background;
     private javax.swing.JProgressBar bar_memories;
+    public static javax.swing.JButton btnCreateNewFolder;
+    private javax.swing.JButton btnDownload;
+    public static javax.swing.JButton btnFolderRoot;
     private javax.swing.ButtonGroup btnGroup_Sex;
     public static javax.swing.JButton btnShare;
     private javax.swing.JButton btnSignIn_Anonymous;
@@ -2222,9 +2232,6 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox cboRegis_FeMale;
     private javax.swing.JCheckBox cboRegis_Male;
     public static javax.swing.JComboBox<String> cmbFolderChild;
-    public static javax.swing.JButton jButton1;
-    public static javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -2232,7 +2239,6 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    public static javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
@@ -2242,11 +2248,9 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
-    public static javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
-    public static javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
@@ -2270,12 +2274,15 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JTextField jTextField1;
     private com.toedter.calendar.JDateChooser jdtRegis_dbo;
-    public static javax.swing.JLabel lblLoading;
+    public static javax.swing.JLabel lblLoading_Register;
+    public static javax.swing.JLabel lblPublicCloud;
     private javax.swing.JLabel lblRegisToLogin;
     private javax.swing.JLabel lblRegister;
     private javax.swing.JLabel lblSayHelloUser;
+    public static javax.swing.JLabel lblShareWithMe;
     private javax.swing.JLabel lblSignIn;
     private javax.swing.JLabel lblSignout;
+    public static javax.swing.JLabel lblTitleCmbFolderChild;
     public static javax.swing.JLabel lblTitlePath;
     private javax.swing.JLabel lblTitlePath1;
     public static javax.swing.JLabel lblTotalNotification;
@@ -2286,7 +2293,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JPanel pnlMain;
     private javax.swing.JPanel pnlMyCloud;
     private javax.swing.JPanel pnlRegister;
-    private javax.swing.JPanel pnlSection;
+    public static javax.swing.JPanel pnlSection;
     private javax.swing.JPanel pnlShareWithMe;
     private javax.swing.JTable tblFileShared;
     private javax.swing.JTable tblFolderShared;

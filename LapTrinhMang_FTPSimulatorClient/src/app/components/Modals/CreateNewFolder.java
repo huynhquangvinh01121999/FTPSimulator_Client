@@ -160,6 +160,7 @@ public class CreateNewFolder extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private boolean findSpecialRegex(String str) {
+//        Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
         Pattern special = Pattern.compile("[!@#$%&*()+=|<>?{}\\[\\]~]");
         Matcher hasSpecial = special.matcher(str);
         return hasSpecial.find();

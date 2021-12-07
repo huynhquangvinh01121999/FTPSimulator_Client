@@ -1086,6 +1086,10 @@ public class ClientUI extends javax.swing.JFrame {
         verifyCode = 0;
         lblVerifyInfo.setVisible(false);
         txtVerifyCode.setVisible(false);
+
+        txtRegis_Email.setEnabled(true);
+        txtRegis_Pass.setEnabled(true);
+        txtRegis_FullName.setEnabled(true);
     }//GEN-LAST:event_lblRegisToLoginMouseClicked
 
     public static void resetSignOut() {
@@ -1120,6 +1124,9 @@ public class ClientUI extends javax.swing.JFrame {
 
         int value = JOptionPane.showConfirmDialog(this, "You will logout then click OK.!\nAre you sure.?", "Logout", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (value == JOptionPane.YES_OPTION) {
+            if (!userInfo.getFullName().trim().equals("anonymous")) {
+                ClientThread.request("signout", userInfo.getEmail());
+            }
             repaint();
             resetSignOut();
         }

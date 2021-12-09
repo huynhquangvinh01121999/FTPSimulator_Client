@@ -300,7 +300,7 @@ public class ClientThread {
             isDisconnect = true;
             objOutputStream.writeObject(new ObjectRequest("disconnect"));
         } catch (IOException ex) {
-            System.err.println("Client xảy ra lỗi IOException thông báo DISCONNECT đến Server - " + ex);
+//            System.err.println("Client xảy ra lỗi IOException thông báo DISCONNECT đến Server - " + ex);
         }
     }
 
@@ -431,7 +431,7 @@ public class ClientThread {
                                 ClientUI.processHandler(result.isSuccessed(), result.getMessage());
                             }
                         } catch (ClassNotFoundException ex) {
-                            System.err.println("Xảy ra lỗi khi RESPONSE_AUTHENTICATE - " + ex);
+//                            System.err.println("Xảy ra lỗi khi RESPONSE_AUTHENTICATE - " + ex);
                             ClientUI.processHandler(false, "Vui lòng đăng nhập lại");
                         }
                         break;
@@ -454,7 +454,7 @@ public class ClientThread {
                                 ClientUI.processHandler(result.isSuccessed(), result.getMessage());
                             }
                         } catch (ClassNotFoundException ex) {
-                            System.err.println("Xảy ra lỗi khi RESPONSE_AUTHENTICATE - " + ex);
+//                            System.err.println("Xảy ra lỗi khi RESPONSE_AUTHENTICATE - " + ex);
                             ClientUI.processHandler(false, "Vui lòng đăng nhập lại");
                         }
                         break;

@@ -1106,6 +1106,9 @@ public class ClientUI extends javax.swing.JFrame {
         listFolderShareInfo = null;
         listPermissionInfo = null;
         locationYourFolder = null;
+        notifications.removeAll(notifications);
+        TOTAL_NOTIFICATIONS = 0;
+        loadCountNewNotification(0);
 
         lblShareWithMe.setVisible(true);
         lblPublicCloud.setVisible(true);
@@ -1272,7 +1275,7 @@ public class ClientUI extends javax.swing.JFrame {
                             });
                         }
                     } catch (Exception ex) {
-                        System.err.println("Xảy ra lỗi khi load data của user lên UI vì listFileInfo == null " + ex);
+//                        System.err.println("Xảy ra lỗi khi load data của user lên UI vì listFileInfo == null " + ex);
                     }
                     return;
                 } else {
@@ -1298,7 +1301,7 @@ public class ClientUI extends javax.swing.JFrame {
         try {
             showDataMyFileCloud();
         } catch (Exception ex) {
-            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
+//            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
         }
     }//GEN-LAST:event_btnFolderRootActionPerformed
 
@@ -1308,7 +1311,7 @@ public class ClientUI extends javax.swing.JFrame {
             showDataMyFileCloud();
             IS_UPLOAD_SHARE_WITH_ME = false;
         } catch (Exception ex) {
-            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
+//            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
         }
 
         // thiết lập đường dẫn root thư mục của client trên server
@@ -1369,7 +1372,7 @@ public class ClientUI extends javax.swing.JFrame {
                     });
                 }
             } catch (Exception ex) {
-                System.err.println("Xảy ra lỗi khi load data của user lên UI vì listFileInfo bị null -" + ex);
+//                System.err.println("Xảy ra lỗi khi load data của user lên UI vì listFileInfo bị null -" + ex);
             }
             ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
         } else {
@@ -1515,7 +1518,7 @@ public class ClientUI extends javax.swing.JFrame {
                 try {
                     showDataMyFileCloud();
                 } catch (Exception ex) {
-                    System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
+//                    System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
                 }
 
                 locationYourFolder = folderInfo.getFolderPath();
@@ -1607,7 +1610,7 @@ public class ClientUI extends javax.swing.JFrame {
             showDataMyFileShare();
             IS_UPLOAD_SHARE_WITH_ME = true;
         } catch (Exception ex) {
-            System.err.println("Xảy ra lỗi khi load data lên layout share with me" + ex);
+//            System.err.println("Xảy ra lỗi khi load data lên layout share with me" + ex);
         }
 
         // redirect view
@@ -1718,7 +1721,7 @@ public class ClientUI extends javax.swing.JFrame {
             try {
                 showDataMyFileCloud();
             } catch (Exception ex) {
-                System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
+//                System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
             }
             int used = (Integer.parseInt(folderInfo.getSize().replaceAll(",", "")) - Integer.parseInt(folderInfo.getRemainingSize().replaceAll(",", ""))) / (1024 * 1024);
             jLabel5.setText("Used " + used + "MB out of "
@@ -1842,7 +1845,7 @@ public class ClientUI extends javax.swing.JFrame {
                                 listFileInfo.add(fileInfo);
                             }
                         } catch (Exception ex) {
-                            System.err.println("Xảy ra lỗi khi add thông tin file vào list - " + ex);
+//                            System.err.println("Xảy ra lỗi khi add thông tin file vào list - " + ex);
                         }
 
                         try {
@@ -1862,7 +1865,7 @@ public class ClientUI extends javax.swing.JFrame {
                                 });
                             }
                         } catch (Exception ex) {
-                            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
+//                            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
                         }
 
                         Message("Tải file lên thành công.!!!");

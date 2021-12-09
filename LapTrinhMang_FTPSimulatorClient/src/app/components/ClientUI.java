@@ -93,8 +93,18 @@ public class ClientUI extends javax.swing.JFrame {
         pnlRegister.setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
 
         setColumnTableModel();
+        setDefaultEditorTable();
         lblLoading_Register.setVisible(false);
     }
+    
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="set edit table">
+    private void setDefaultEditorTable(){
+        tblMyFileCloud.setDefaultEditor(Object.class, null);
+        tblFolderShared.setDefaultEditor(Object.class, null);
+        tblFileShared.setDefaultEditor(Object.class, null);
+    }
+    // </editor-fold>
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="set up header table model">
@@ -1173,7 +1183,11 @@ public class ClientUI extends javax.swing.JFrame {
                     } else {
                         user.setSex("FeMale");
                     }
-                    user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
+                    if(jdtRegis_dbo.getDate() == null){
+                        user.setDob(DateHelper.Now());
+                    }else{
+                        user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
+                    }
                     user.setStatus("unlock");
                     user.setCreateAt(DateHelper.Now());
                     ClientThread.request("register", user);

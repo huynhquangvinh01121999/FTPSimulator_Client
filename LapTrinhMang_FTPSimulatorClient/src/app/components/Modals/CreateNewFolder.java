@@ -133,22 +133,37 @@ public class CreateNewFolder extends javax.swing.JDialog {
                 if (findSpecialRegex(folderChildName.trim())) {
                     JOptionPane.showMessageDialog(this, "Tên thư mục không được chứa ký tự đặc biệt.!!!");
                 } else {
-                    String desPath = folderRootPath + "/" + removeAccent(folderChildName);
-                    Folders folder = new Folders();
-                    folder.setFolderId(ThreadRandoms.uuid());
-                    folder.setFolderName(removeAccent(folderChildName));
-                    folder.setFolderPath(desPath);
-                    folder.setEmail(emailUser);
-                    folder.setSize("1,073,741,824");    // 1GB
-                    folder.setRemainingSize("1,073,741,824"); // 1GB
-                    folder.setCreateAt(DateHelper.Now());
-                    folder.setFolderParentId(folderParentId);
-                    folder.setFolderUserPermission("unlock");
 
-                    ClientThread.request("new_folder", folder);
-                    index.addFolderChildToListFolderChild(folder);
-                    JOptionPane.showMessageDialog(this, "Tạo thư mục thành công.!!!");
-                    this.dispose();
+                    String desPath = folderRootPath + "/" + removeAccent(folderChildName);
+                    // kiểm tra thư tên mục tồn tại chưa
+                    boolean checkExist = false;
+                    if (!index.listFolderChildInfo.isEmpty()) {
+                        for (Folders item : index.listFolderChildInfo) {
+                            if (item.getFolderPath().trim().equals(desPath)) {
+                                checkExist = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!checkExist) {
+                        Folders folder = new Folders();
+                        folder.setFolderId(ThreadRandoms.uuid());
+                        folder.setFolderName(removeAccent(folderChildName));
+                        folder.setFolderPath(desPath);
+                        folder.setEmail(emailUser);
+                        folder.setSize("1,073,741,824");    // 1GB
+                        folder.setRemainingSize("1,073,741,824"); // 1GB
+                        folder.setCreateAt(DateHelper.Now());
+                        folder.setFolderParentId(folderParentId);
+                        folder.setFolderUserPermission("unlock");
+
+                        ClientThread.request("new_folder", folder);
+                        index.addFolderChildToListFolderChild(folder);
+                        JOptionPane.showMessageDialog(this, "Tạo thư mục thành công.!!!");
+                        this.dispose();
+                    }else{
+                        JOptionPane.showMessageDialog(this, "Tên thư mục đã tồn tại.!!!");
+                    }
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập tên thư mục.!!!");
@@ -165,7 +180,7 @@ public class CreateNewFolder extends javax.swing.JDialog {
         Matcher hasSpecial = special.matcher(str);
         return hasSpecial.find();
     }
-    
+
     private String removeAccent(String s) {
         String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");

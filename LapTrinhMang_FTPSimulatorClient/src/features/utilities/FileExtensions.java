@@ -185,14 +185,15 @@ public class FileExtensions {
     // lấy ra tên file từ file chỉ định
     public static String getFileName(File file) {
         try {
-            String sourceFilePath = replaceBackslashes(file.getAbsolutePath());
-            return sourceFilePath.substring(sourceFilePath.lastIndexOf("/") + 1, sourceFilePath.length());
-            //        String[] subFilePath = sourceFilePath.split("/");
-            //        return subFilePath[subFilePath.length - 1];
+//            System.out.println(file.getAbsolutePath());
+//            String sourceFilePath = replaceBackslashes(file.getAbsolutePath());
+//            System.out.println(sourceFilePath);
+//            return sourceFilePath.substring(sourceFilePath.lastIndexOf("/") + 1, sourceFilePath.length());
+            return file.getName();
         } catch (Exception ex) {
             System.err.println("Xảy ra lỗi khi lấy tên file, function getFileName - " + ex);
         }
-        return null;
+        return "error";
     }
 
     public static String getFileExtension(File file) {
@@ -206,7 +207,8 @@ public class FileExtensions {
 
     // build
     public static void main(String[] args) {
-        File file = FileExtensions.getFileChooser();
-        System.out.println(FileExtensions.getFileExtension(file));
+        File file = getFileChooser();
+        System.out.println(file.getName());
+        System.out.println(getFileName(file));
     }
 }

@@ -4,6 +4,9 @@ import app.components.Modals.CreateNewFolder;
 import app.components.Modals.Notification;
 import app.components.Modals.SharePeople;
 import app.ProcessHandle.ClientThread;
+import app.components.Loading.LoadingDownloadFile;
+import app.components.Loading.LoadingProcess;
+import app.components.Loading.LoadingUploadFile;
 import models.FileDownloadInfo;
 import models.Permissions;
 import models.Files;
@@ -28,6 +31,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.*;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -78,6 +82,9 @@ public class ClientUI extends javax.swing.JFrame {
     // location my folder on server
     private static String locationYourFolder = null;
 
+    // 1MB
+    private static double CONSTANT_1_MB = 1048576;
+
     private static DefaultTableModel tblMyFileCloudModel;
     private DefaultTableModel tblFolderSharedModel;
     private DefaultTableModel tblFileSharedModel;
@@ -95,11 +102,38 @@ public class ClientUI extends javax.swing.JFrame {
         setColumnTableModel();
         setDefaultEditorTable();
         lblLoading_Register.setVisible(false);
+        jLabel15.setVisible(false);
     }
-    
+
+    private static double usedSize = 0;
+
+    public static void loadProcessMemory() {
+        if (!listFileInfo.isEmpty() && listFileInfo != null) {
+            listFileInfo.forEach((file) -> {
+                if (file.getPrexEmail().trim().equals(folderInfo.getFolderName().trim())) {
+                    usedSize += Double.parseDouble(file.getFileSize()) / CONSTANT_1_MB;
+                }
+            });
+//            System.out.println(usedSize);
+        }
+
+        double folderSize = Double.parseDouble(folderInfo.getSize().replaceAll(",", "")) / CONSTANT_1_MB;
+
+        jLabel5.setText("Used " + String.format("%,.2f", Math.ceil(usedSize)) + "MB out of "
+                + String.format("%,.2f", Math.ceil(folderSize)) + "MB");
+
+        String maximumProcessSize = String.format("%,.0f", Math.ceil(folderSize));
+        String valueProcessSize = String.format("%,.0f", Math.ceil(usedSize));
+
+//        System.out.println(maximumProcessSize);
+//        System.out.println(valueProcessSize);
+        bar_memories.setMaximum(Integer.parseInt(maximumProcessSize.replaceAll(",", "")));
+        bar_memories.setValue(Integer.parseInt(valueProcessSize.replaceAll(",", "")));
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="set edit table">
-    private void setDefaultEditorTable(){
+    private void setDefaultEditorTable() {
         tblMyFileCloud.setDefaultEditor(Object.class, null);
         tblFolderShared.setDefaultEditor(Object.class, null);
         tblFileShared.setDefaultEditor(Object.class, null);
@@ -151,15 +185,18 @@ public class ClientUI extends javax.swing.JFrame {
         tblMyFileCloudModel.setRowCount(0);
         if (!listFileInfo.isEmpty() && listFileInfo != null) {
             listFileInfo.forEach((file) -> {
-                tblMyFileCloudModel.addRow(new Object[]{
-                    file.getFileName().trim(),
-                    file.getPrexEmail().trim(),
-                    file.getUploadAt().trim(),
-                    file.getFileExtension().trim(),
-                    FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
-                    file.getFileSize().trim(),
-                    file.getFolderId().trim()
-                });
+                if (!file.getPrexEmail().trim().equals("anonymous")) {
+                    tblMyFileCloudModel.addRow(new Object[]{
+                        file.getFileName().trim(),
+                        file.getPrexEmail().trim(),
+                        file.getUploadAt().trim(),
+                        file.getFileExtension().trim(),
+                        //                        FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                        String.format("%,.5f", Double.parseDouble(file.getFileSize()) / CONSTANT_1_MB) + " MB",
+                        file.getFileSize().trim(),
+                        file.getFolderId().trim()
+                    });
+                }
             });
         }
 
@@ -176,6 +213,24 @@ public class ClientUI extends javax.swing.JFrame {
         }
     }
 
+    public static void showDataPublicCloud() {
+        // set up table show list file of user
+        tblMyFileCloudModel.setRowCount(0);
+        if (!listFileInfo.isEmpty() && listFileInfo != null) {
+            listFileInfo.forEach((file) -> {
+                tblMyFileCloudModel.addRow(new Object[]{
+                    file.getFileName().trim(),
+                    file.getPrexEmail().trim(),
+                    file.getUploadAt().trim(),
+                    file.getFileExtension().trim(),
+                    String.format("%,.5f", Double.parseDouble(file.getFileSize()) / CONSTANT_1_MB) + " MB",
+                    file.getFileSize().trim(),
+                    file.getFolderId().trim()
+                });
+            });
+        }
+    }
+
     private void showDataMyFileShare() {
         tblFolderSharedModel.setRowCount(0);
         if (!listFolderShareInfo.isEmpty()) {
@@ -183,7 +238,9 @@ public class ClientUI extends javax.swing.JFrame {
                 for (FolderShares folderShares : listFolderSharedInfo) {
                     if (folderShares.getFolderId().trim().equals(folder.getFolderId().trim())) {
                         tblFolderSharedModel.addRow(new Object[]{
-                            folder.getFolderId(), folder.getFolderName(), folder.getCreateAt(),
+                            folder.getFolderId(),
+                            folder.getFolderName(),
+                            folder.getCreateAt(),
                             folder.getFolderPath(),
                             folder.getEmail(),
                             folderShares.getPermissionId()
@@ -202,7 +259,7 @@ public class ClientUI extends javax.swing.JFrame {
                     if (fileShares.getFileId().trim().equals(file.getFileId().trim())) {
                         tblFileSharedModel.addRow(new Object[]{
                             file.getFileId(), file.getFileName(), file.getPrexEmail(), file.getUploadAt(), file.getFileExtension(),
-                            FileExtensions.convertSizeFromSizeString(file.getFileSize(), "MB") + " MB",
+                            String.format("%,.5f", Double.parseDouble(file.getFileSize()) / CONSTANT_1_MB) + " MB",
                             file.getSourcePath(),
                             fileShares.getPermissionId()
                         });
@@ -262,6 +319,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel26 = new javax.swing.JLabel();
         btnSignIn_Anonymous = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
         jLabel14 = new RoundedLable(50, new Color(69,156,81));
         jPanel3 = new RoundedPanel(100, new Color(83,187,98));
         jLabel16 = new javax.swing.JLabel();
@@ -288,6 +346,7 @@ public class ClientUI extends javax.swing.JFrame {
         lblRegisToLogin = new javax.swing.JLabel();
         txtRegis_Email = new javax.swing.JTextField();
         jLabel30 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
         pnlMain = new javax.swing.JPanel();
         lblUploadNewFile = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -295,8 +354,8 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         lblSayHelloUser = new javax.swing.JLabel();
         lblSignout = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
+        lblMinimize = new javax.swing.JLabel();
+        lblReload = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         pnlSection = new javax.swing.JPanel();
         pnlMyCloud = new javax.swing.JPanel();
@@ -310,6 +369,7 @@ public class ClientUI extends javax.swing.JFrame {
         btnFolderRoot = new javax.swing.JButton();
         btnDownload = new javax.swing.JButton();
         btnShare = new javax.swing.JButton();
+        jLabel15 = new javax.swing.JLabel();
         pnlShareWithMe = new javax.swing.JPanel();
         lblTitlePath1 = new javax.swing.JLabel();
         jButton4 = new javax.swing.JButton();
@@ -320,7 +380,7 @@ public class ClientUI extends javax.swing.JFrame {
         tblFileShared = new javax.swing.JTable();
         jLabel29 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
+        lblMyCloud = new javax.swing.JLabel();
         lblShareWithMe = new javax.swing.JLabel();
         jSeparator6 = new javax.swing.JSeparator();
         lblPublicCloud = new javax.swing.JLabel();
@@ -453,7 +513,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("X");
-        jLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 0)));
+        jLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         jLabel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -462,6 +522,20 @@ public class ClientUI extends javax.swing.JFrame {
         });
         jPanel1.add(jLabel1);
         jLabel1.setBounds(324, 30, 30, 30);
+
+        jLabel23.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel23.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel23.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel23.setText("_");
+        jLabel23.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jLabel23.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel23.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel23MouseClicked(evt);
+            }
+        });
+        jPanel1.add(jLabel23);
+        jLabel23.setBounds(290, 30, 30, 30);
 
         pnlLogin.add(jPanel1);
         jPanel1.setBounds(520, 20, 390, 530);
@@ -542,7 +616,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel20.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel20.setText("Register Cloud");
         jPanel2.add(jLabel20);
-        jLabel20.setBounds(80, 20, 220, 60);
+        jLabel20.setBounds(20, 20, 250, 50);
 
         jLabel19.setFont(new java.awt.Font("Rockwell Condensed", 0, 22)); // NOI18N
         jLabel19.setForeground(new java.awt.Color(255, 255, 255));
@@ -632,7 +706,7 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel30.setForeground(new java.awt.Color(255, 255, 255));
         jLabel30.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel30.setText("X");
-        jLabel30.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 0)));
+        jLabel30.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         jLabel30.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jLabel30.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -641,6 +715,20 @@ public class ClientUI extends javax.swing.JFrame {
         });
         jPanel2.add(jLabel30);
         jLabel30.setBounds(320, 10, 30, 30);
+
+        jLabel24.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel24.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel24.setText("_");
+        jLabel24.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jLabel24.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel24.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel24MouseClicked(evt);
+            }
+        });
+        jPanel2.add(jLabel24);
+        jLabel24.setBounds(285, 10, 30, 30);
 
         pnlRegister.add(jPanel2);
         jPanel2.setBounds(380, 0, 390, 570);
@@ -686,7 +774,7 @@ public class ClientUI extends javax.swing.JFrame {
         lblSayHelloUser.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblSayHelloUser.setText("Xin chào: Huỳnh Quang Vinh");
         pnlMain.add(lblSayHelloUser);
-        lblSayHelloUser.setBounds(795, 0, 230, 30);
+        lblSayHelloUser.setBounds(760, 0, 230, 30);
 
         lblSignout.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblSignout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-logout-25.png"))); // NOI18N
@@ -697,22 +785,34 @@ public class ClientUI extends javax.swing.JFrame {
             }
         });
         pnlMain.add(lblSignout);
-        lblSignout.setBounds(1030, 0, 40, 30);
+        lblSignout.setBounds(995, 0, 40, 30);
 
-        jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-help-25.png"))); // NOI18N
-        jLabel6.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        pnlMain.add(jLabel6);
-        jLabel6.setBounds(810, 50, 40, 30);
+        lblMinimize.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblMinimize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-minimize-window-25.png"))); // NOI18N
+        lblMinimize.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblMinimize.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblMinimizeMouseClicked(evt);
+            }
+        });
+        pnlMain.add(lblMinimize);
+        lblMinimize.setBounds(1030, 1, 40, 30);
 
-        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-setting-25.png"))); // NOI18N
-        jLabel7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        pnlMain.add(jLabel7);
-        jLabel7.setBounds(860, 50, 40, 30);
+        lblReload.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblReload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-reload-35.png"))); // NOI18N
+        lblReload.setToolTipText("Refresh");
+        lblReload.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblReload.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblReloadMouseClicked(evt);
+            }
+        });
+        pnlMain.add(lblReload);
+        lblReload.setBounds(808, 50, 40, 30);
 
         jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-notification-25.png"))); // NOI18N
+        jLabel8.setToolTipText("Notifications");
         jLabel8.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jLabel8.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -837,6 +937,10 @@ public class ClientUI extends javax.swing.JFrame {
         pnlMyCloud.add(btnShare);
         btnShare.setBounds(640, 110, 130, 33);
 
+        jLabel15.setText("jLabel15");
+        pnlMyCloud.add(jLabel15);
+        jLabel15.setBounds(390, 190, 40, 14);
+
         pnlSection.add(pnlMyCloud, "pnlMyCloud");
 
         pnlShareWithMe.setBackground(new java.awt.Color(255, 255, 255));
@@ -854,6 +958,7 @@ public class ClientUI extends javax.swing.JFrame {
         jButton4.setText(" Download");
         jButton4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         jButton4.setBorderPainted(false);
+        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
@@ -965,23 +1070,23 @@ public class ClientUI extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Segoe UI Semibold", 1, 12)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 254));
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("Used 15MB out of 1GB");
+        jLabel5.setText("Used 0MB out of 1GB");
         jLabel5.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pnlMain.add(jLabel5);
         jLabel5.setBounds(30, 480, 220, 30);
 
-        jLabel23.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
-        jLabel23.setForeground(new java.awt.Color(255, 255, 254));
-        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-network-drive-25.png"))); // NOI18N
-        jLabel23.setText("   My Cloud");
-        jLabel23.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jLabel23.addMouseListener(new java.awt.event.MouseAdapter() {
+        lblMyCloud.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
+        lblMyCloud.setForeground(new java.awt.Color(255, 255, 254));
+        lblMyCloud.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/icon-network-drive-25.png"))); // NOI18N
+        lblMyCloud.setText("   My Cloud");
+        lblMyCloud.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblMyCloud.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel23MouseClicked(evt);
+                lblMyCloudMouseClicked(evt);
             }
         });
-        pnlMain.add(jLabel23);
-        jLabel23.setBounds(50, 200, 180, 40);
+        pnlMain.add(lblMyCloud);
+        lblMyCloud.setBounds(50, 200, 180, 40);
 
         lblShareWithMe.setFont(new java.awt.Font("Segoe UI Semibold", 3, 18)); // NOI18N
         lblShareWithMe.setForeground(new java.awt.Color(255, 255, 254));
@@ -1016,6 +1121,7 @@ public class ClientUI extends javax.swing.JFrame {
 
         bar_memories.setBackground(new java.awt.Color(51, 51, 51));
         bar_memories.setForeground(new java.awt.Color(153, 153, 255));
+        bar_memories.setMaximum(0);
         bar_memories.setOpaque(true);
         pnlMain.add(bar_memories);
         bar_memories.setBounds(20, 464, 250, 10);
@@ -1120,8 +1226,8 @@ public class ClientUI extends javax.swing.JFrame {
         TOTAL_NOTIFICATIONS = 0;
         loadCountNewNotification(0);
 
+        lblMyCloud.setVisible(true);
         lblShareWithMe.setVisible(true);
-        lblPublicCloud.setVisible(true);
         lblTitleCmbFolderChild.setVisible(true);
         btnFolderRoot.setVisible(true);
         cmbFolderChild.setVisible(true);
@@ -1141,6 +1247,9 @@ public class ClientUI extends javax.swing.JFrame {
                 ClientThread.request("signout", userInfo.getEmail());
             }
             repaint();
+            jLabel25.setVisible(true);
+            bar_memories.setVisible(true);
+            jLabel5.setVisible(true);
             resetSignOut();
         }
     }//GEN-LAST:event_lblSignoutMouseClicked
@@ -1168,6 +1277,7 @@ public class ClientUI extends javax.swing.JFrame {
                 lblVerifyInfo.setVisible(true);
                 txtVerifyCode.setVisible(true);
                 isVerify = true;    // set giá trị thành đã check
+
                 txtRegis_Email.setEnabled(false);
                 txtRegis_Pass.setEnabled(false);
                 txtRegis_FullName.setEnabled(false);
@@ -1183,9 +1293,9 @@ public class ClientUI extends javax.swing.JFrame {
                     } else {
                         user.setSex("FeMale");
                     }
-                    if(jdtRegis_dbo.getDate() == null){
+                    if (jdtRegis_dbo.getDate() == null) {
                         user.setDob(DateHelper.Now());
-                    }else{
+                    } else {
                         user.setDob(DateHelper.formatDate(jdtRegis_dbo.getDate()));
                     }
                     user.setStatus("unlock");
@@ -1319,10 +1429,16 @@ public class ClientUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnFolderRootActionPerformed
 
-    private void jLabel23MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel23MouseClicked
+    private void lblMyCloudMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblMyCloudMouseClicked
         prexEmailInfo = userInfo.getEmail().split("@")[0];
         try {
+            loadProcessMemory();
             showDataMyFileCloud();
+            lblTitleCmbFolderChild.setVisible(true);
+            btnFolderRoot.setVisible(true);
+            cmbFolderChild.setVisible(true);
+            btnCreateNewFolder.setVisible(true);
+            btnShare.setVisible(true);
             IS_UPLOAD_SHARE_WITH_ME = false;
         } catch (Exception ex) {
 //            System.err.println("Xảy ra lỗi khi load data của user lên UI vì có danh sách bị null - " + ex);
@@ -1337,7 +1453,7 @@ public class ClientUI extends javax.swing.JFrame {
         repaint();
         ClientThread.tranferLayout(pnlContainer, "pnlMain");
         ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
-    }//GEN-LAST:event_jLabel23MouseClicked
+    }//GEN-LAST:event_lblMyCloudMouseClicked
 
     private void lblPublicCloudMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPublicCloudMouseClicked
 
@@ -1363,9 +1479,14 @@ public class ClientUI extends javax.swing.JFrame {
             locationYourFolder = strSub + "/anonymous";
             folderSelected = new Folders("anonymous", "unlock");
             prexEmailInfo = "anonymous";
-            System.out.println(locationYourFolder);
+//            System.out.println(locationYourFolder);
 
             // load file public in anonymous folder
+            lblTitleCmbFolderChild.setVisible(false);
+            btnFolderRoot.setVisible(false);
+            cmbFolderChild.setVisible(false);
+            btnCreateNewFolder.setVisible(false);
+            btnShare.setVisible(false);
             lblTitlePath.setText("Public Cloud ");
             tblMyFileCloudModel.setRowCount(0);
 
@@ -1455,7 +1576,7 @@ public class ClientUI extends javax.swing.JFrame {
                         String fileSize = tblMyFileCloud.getValueAt(selectedRow, 5).toString();
 
                         // kiểm tra kích thước file download có vượt mức cho phép ko???
-                        if (Long.parseLong(fileSize) <= Long.parseLong(userInfo.getFileSizeDownload().trim())) {
+                        if (Double.parseDouble(fileSize) <= Double.parseDouble(userInfo.getFileSizeDownload().trim())) {
 
                             // chọn đường dẫn download file
                             JFileChooser destFile = new JFileChooser();
@@ -1486,7 +1607,17 @@ public class ClientUI extends javax.swing.JFrame {
                                     }
                                     if (checkSourcePath) {
                                         ClientThread.request("download_file", fileDownloadInfo);
-                                        Message("Tải xuống thành công.!!!");
+                                        try {
+                                            Thread thread = new Thread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    new LoadingDownloadFile();
+                                                }
+                                            });
+                                            thread.start();
+                                        } catch (Exception e) {
+                                        }
+//                                        Message("Tải xuống thành công.!!!");
                                         return;
                                     } else {
                                         Message("File không tồn tại hoặc đã bị xóa.!!!");
@@ -1500,8 +1631,7 @@ public class ClientUI extends javax.swing.JFrame {
 
                         } else {
                             Message("Kích thước file download tối đa"
-                                    + ((Integer.parseInt(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) / 1024)
-                                    + (Integer.parseInt(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) % 1024))
+                                    + String.format("%,.2f", (Double.parseDouble(userInfo.getFileSizeDownload().trim().replaceAll(",", "")) / 1024))
                                     + "KB.!!!");
                         }
                     } else {
@@ -1530,7 +1660,7 @@ public class ClientUI extends javax.swing.JFrame {
                 txtLoginEmail.setText("");
                 txtLoginPass.setText("");
                 try {
-                    showDataMyFileCloud();
+                    showDataPublicCloud();
                 } catch (Exception ex) {
 //                    System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
                 }
@@ -1539,13 +1669,16 @@ public class ClientUI extends javax.swing.JFrame {
                 folderSelected = folderInfo;
                 prexEmailInfo = "anonymous";
 
+                lblMyCloud.setVisible(false);
                 lblShareWithMe.setVisible(false);
-                lblPublicCloud.setVisible(false);
                 lblTitleCmbFolderChild.setVisible(false);
                 btnFolderRoot.setVisible(false);
                 cmbFolderChild.setVisible(false);
                 btnCreateNewFolder.setVisible(false);
                 btnShare.setVisible(false);
+                jLabel25.setVisible(false);
+                bar_memories.setVisible(false);
+                jLabel5.setVisible(false);
                 lblTitlePath.setText("Public Cloud ");
                 // redirect view
                 repaint();
@@ -1602,7 +1735,17 @@ public class ClientUI extends javax.swing.JFrame {
                                 fileDownloadInfo.setSourceFilePath(destinationPath);
 
                                 ClientThread.request("download_file", fileDownloadInfo);
-                                Message("Tải file xuống thành công.!!!");
+                                try {
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            new LoadingDownloadFile();
+                                        }
+                                    });
+                                    thread.start();
+                                } catch (Exception e) {
+                                }
+//                                Message("Tải file xuống thành công.!!!");
                             } else {
                                 Message("Vui lòng chọn đường dẫn tải xuống.!!!");
                             }
@@ -1651,6 +1794,85 @@ public class ClientUI extends javax.swing.JFrame {
     private void jLabel30MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel30MouseClicked
         shutdown();
     }//GEN-LAST:event_jLabel30MouseClicked
+
+    private void lblMinimizeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblMinimizeMouseClicked
+        this.setState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_lblMinimizeMouseClicked
+
+    private void jLabel23MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel23MouseClicked
+        this.setState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_jLabel23MouseClicked
+
+    private void jLabel24MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel24MouseClicked
+        this.setState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_jLabel24MouseClicked
+
+    private void lblReloadMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblReloadMouseClicked
+        if (!userInfo.getEmail().trim().equals("anonymous")) {
+            Users user = new Users();
+            user.setEmail(userInfo.getEmail().trim());
+            user.setPassword(userInfo.getPassword().trim());
+            ClientThread.request("reload_with_authenticate", user);
+            while (processHandler) {
+                System.out.println("watting handler authenticate...");
+            }
+
+            if (statusResult) {
+                lblSayHelloUser.setText("Xin chào: " + userInfo.getFullName());
+                try {
+                    showDataMyFileCloud();
+                } catch (Exception ex) {
+                }
+
+                loadProcessMemory();
+
+                // thiết lập đường dẫn root thư mục của client trên server
+                // phục vụ cho upload/download file
+                locationYourFolder = folderInfo.getFolderPath();
+                folderSelected = folderInfo;
+                prexEmailInfo = userInfo.getEmail().split("@")[0];
+
+                if (userInfo.getAnonymousPermission().trim().equals("lock")) {
+                    lblPublicCloud.setVisible(false);
+                }
+            }
+        } else {
+            ClientThread.request("reload_with_anonymous", "anonymous");
+
+            while (processHandler) {
+                System.out.println("watting handler authenticate...");
+            }
+
+            if (statusResult) {
+                lblSayHelloUser.setText("Xin chào: " + userInfo.getFullName());
+                try {
+                    showDataPublicCloud();
+                } catch (Exception ex) {
+                }
+
+                locationYourFolder = folderInfo.getFolderPath();
+                folderSelected = folderInfo;
+                prexEmailInfo = "anonymous";
+                lblTitlePath.setText("Public Cloud ");
+            }
+        }
+
+        // redirect view
+        repaint();
+        ClientThread.tranferLayout(pnlContainer, "pnlMain");
+        ClientThread.tranferLayout(pnlSection, "pnlMyCloud");
+        setDefaultProcessHandler();
+        try {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    new LoadingProcess();
+                }
+            });
+            thread.start();
+        } catch (Exception e) {
+        }
+    }//GEN-LAST:event_lblReloadMouseClicked
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="SHUT DOWN">
@@ -1737,11 +1959,8 @@ public class ClientUI extends javax.swing.JFrame {
             } catch (Exception ex) {
 //                System.err.println("Đã bỏ qua func showDataMyFileCloud - " + ex);
             }
-            int used = (Integer.parseInt(folderInfo.getSize().replaceAll(",", "")) - Integer.parseInt(folderInfo.getRemainingSize().replaceAll(",", ""))) / (1024 * 1024);
-            jLabel5.setText("Used " + used + "MB out of "
-                    + (Integer.parseInt(folderInfo.getSize().replaceAll(",", "")) / (1024 * 1024 * 1024)) + "GB");
-            bar_memories.setMaximum(Integer.parseInt(folderInfo.getSize().replaceAll(",", "")));
-            bar_memories.setValue(Integer.parseInt(folderInfo.getSize().replaceAll(",", "")) - Integer.parseInt(folderInfo.getRemainingSize().replaceAll(",", "")));
+
+            loadProcessMemory();
 
             // thiết lập đường dẫn root thư mục của client trên server
             // phục vụ cho upload/download file
@@ -1765,49 +1984,48 @@ public class ClientUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Kiểm tra folder còn đủ dung lượng ko">
     private boolean isHaveEnoughSizeFolder(String remainingSizeFolder, String fileSize) {
-        int remainingSizeFolderConvert = Integer.parseInt(remainingSizeFolder.replaceAll(",", ""));
-        int fileSizeConvert = Integer.parseInt(fileSize.replaceAll(",", ""));
-        return (fileSizeConvert <= remainingSizeFolderConvert);
+        try {
+            double remainingSizeFolderConvert = Double.parseDouble(remainingSizeFolder.replaceAll(",", ""));
+            double fileSizeConvert = Double.parseDouble(fileSize.replaceAll(",", ""));
+            return (fileSizeConvert <= remainingSizeFolderConvert);
+        } catch (Exception ex) {
+            return false;
+        }
     }
     //</editor-fold>
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Kiểm tra tên file khi upload đã tồn tại chưa">
     private void checkFileNameExist(Files fileInfo) {
-        String totalSize = folderInfo.getSize().replaceAll(",", "");
-        String remainingSizeFolder = folderInfo.getRemainingSize();
-        for (Files file : listFileInfo) {
-            if (file.getFileName().equals(fileInfo.getFileName())
-                    && file.getSourcePath().trim().equals(fileInfo.getSourcePath().trim())) {
-                file.setFileSize(fileInfo.getFileSize());
-                file.setFileExtension(fileInfo.getFileExtension());
-                file.setUploadAt(fileInfo.getUploadAt());
+//        String totalSize = folderInfo.getSize().replaceAll(",", "");
+        try {
+            String remainingSizeFolder = folderInfo.getRemainingSize();
+            for (Files file : listFileInfo) {
+                if (file.getFileName().equals(fileInfo.getFileName())
+                        && file.getSourcePath().trim().equals(fileInfo.getSourcePath().trim())) {
+                    file.setFileSize(fileInfo.getFileSize());
+                    file.setFileExtension(fileInfo.getFileExtension());
+                    file.setUploadAt(fileInfo.getUploadAt());
 
-                // update lại kích thước file
-                int remainingSizeFolderConvert
-                        = Integer.parseInt(remainingSizeFolder.replaceAll(",", ""))
-                        + Integer.parseInt(file.getFileSize().replaceAll(",", ""))
-                        - Integer.parseInt(fileInfo.getFileSize().replaceAll(",", ""));
-                int used = (Integer.parseInt(totalSize) - remainingSizeFolderConvert) / (1024 * 1024);
-                folderInfo.setRemainingSize(String.valueOf(remainingSizeFolderConvert));
-                jLabel5.setText("Used " + used + " MB out of "
-                        + (Integer.parseInt(totalSize) / (1024 * 1024 * 1024)) + "GB");
-                bar_memories.setValue(Integer.parseInt(totalSize) - remainingSizeFolderConvert);
-                return;
+                    // update lại dung lượng folder
+                    double remainingSizeFolderConvert
+                            = Double.parseDouble(remainingSizeFolder.replaceAll(",", ""))
+                            + Double.parseDouble(file.getFileSize().replaceAll(",", ""))
+                            - Double.parseDouble(fileInfo.getFileSize().replaceAll(",", ""));
+                    folderInfo.setRemainingSize(String.valueOf(remainingSizeFolderConvert));
+                    return;
+                }
             }
+
+            // chưa tồn tại tên file đó
+            double remainingSizeFolderConvert
+                    = Double.parseDouble(remainingSizeFolder.replaceAll(",", ""))
+                    - Double.parseDouble(fileInfo.getFileSize().replaceAll(",", ""));
+
+            folderInfo.setRemainingSize(String.valueOf(remainingSizeFolderConvert));
+            listFileInfo.add(fileInfo);
+        } catch (Exception ex) {
         }
-
-        // chưa tồn tại tên file đó
-        int remainingSizeFolderConvert
-                = Integer.parseInt(remainingSizeFolder.replaceAll(",", ""))
-                - Integer.parseInt(fileInfo.getFileSize().replaceAll(",", ""));
-
-        int used = (Integer.parseInt(totalSize) - remainingSizeFolderConvert) / (1024 * 1024);
-        folderInfo.setRemainingSize(String.valueOf(remainingSizeFolderConvert));
-        jLabel5.setText("Used " + used + "MB out of "
-                + (Integer.parseInt(totalSize) / (1024 * 1024 * 1024)) + "GB");
-        bar_memories.setValue(Integer.parseInt(totalSize) - remainingSizeFolderConvert);
-        listFileInfo.add(fileInfo);
     }
     //</editor-fold>
 
@@ -1881,8 +2099,17 @@ public class ClientUI extends javax.swing.JFrame {
                         } catch (Exception ex) {
 //                            System.err.println("Xảy ra lỗi khi load data của user lên UI" + ex);
                         }
-
-                        Message("Tải file lên thành công.!!!");
+                        try {
+                            Thread thread = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    new LoadingUploadFile();
+                                }
+                            });
+                            thread.start();
+                        } catch (Exception e) {
+                        }
+//                        Message("Tải file lên thành công.!!!");
                         return;
                         //</editor-fold>
 
@@ -1911,7 +2138,18 @@ public class ClientUI extends javax.swing.JFrame {
                                 // Kiểm tra tên file khi upload đã tồn tại chưa???
                                 checkFileNameExist(fileInfo);
                                 showDataMyFileCloud();
-                                Message("Tải file lên thành công.!!!");
+                                loadProcessMemory();
+                                try {
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            new LoadingUploadFile();
+                                        }
+                                    });
+                                    thread.start();
+                                } catch (Exception e) {
+                                }
+//                                Message("Tải file lên thành công.!!!");
                             } else {
                                 Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
                             }
@@ -1923,8 +2161,7 @@ public class ClientUI extends javax.swing.JFrame {
                     }
                 } else {
                     Message("Kích thước file upload tối đa"
-                            + ((Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024)
-                            + (Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) % 1024))
+                            + String.format("%,.2f", (Double.parseDouble(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024))
                             + "KB.!!!");
                 }
             }
@@ -1981,7 +2218,7 @@ public class ClientUI extends javax.swing.JFrame {
                                 // check file name exist
                                 boolean isExist = false;
                                 for (Files item : listFileShareInfo) {
-                                    if (item.getFileName().equals(fileInfo.getFileName())
+                                    if (item.getFileName().trim().equals(fileInfo.getFileName().trim())
                                             && item.getSourcePath().trim().equals(fileInfo.getSourcePath().trim())) {
                                         item.setFileSize(fileInfo.getFileSize());
                                         item.setFileExtension(fileInfo.getFileExtension());
@@ -1994,7 +2231,17 @@ public class ClientUI extends javax.swing.JFrame {
                                     listFileShareInfo.add(fileInfo);
                                 }
                                 showDataMyFileShare();
-                                Message("Tải file lên thành công.!!!");
+                                try {
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            new LoadingUploadFile();
+                                        }
+                                    });
+                                    thread.start();
+                                } catch (Exception e) {
+                                }
+//                                Message("Tải file lên thành công.!!!");
                                 return;
                             }
                             Message("Không đủ dung lượng.\nVui lòng xóa bớt hoặc upload file với dung lượng nhỏ hơn");
@@ -2002,8 +2249,7 @@ public class ClientUI extends javax.swing.JFrame {
                             // </editor-fold>
                         }
                         Message("Kích thước file upload tối đa"
-                                + ((Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024)
-                                + (Integer.parseInt(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) % 1024))
+                                + String.format("%,.2f", (Double.parseDouble(userInfo.getFileSizeUpload().trim().replaceAll(",", "")) / 1024))
                                 + "KB.!!!");
                     }
                 } else {
@@ -2256,7 +2502,7 @@ public class ClientUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel background;
-    private javax.swing.JProgressBar bar_memories;
+    public static javax.swing.JProgressBar bar_memories;
     public static javax.swing.JButton btnCreateNewFolder;
     private javax.swing.JButton btnDownload;
     public static javax.swing.JButton btnFolderRoot;
@@ -2274,6 +2520,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    public javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
@@ -2283,6 +2530,7 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
@@ -2290,10 +2538,8 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
+    public static javax.swing.JLabel jLabel5;
+    public javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -2310,9 +2556,12 @@ public class ClientUI extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField1;
     private com.toedter.calendar.JDateChooser jdtRegis_dbo;
     public static javax.swing.JLabel lblLoading_Register;
+    private javax.swing.JLabel lblMinimize;
+    public static javax.swing.JLabel lblMyCloud;
     public static javax.swing.JLabel lblPublicCloud;
     private javax.swing.JLabel lblRegisToLogin;
     private javax.swing.JLabel lblRegister;
+    private javax.swing.JLabel lblReload;
     private javax.swing.JLabel lblSayHelloUser;
     public static javax.swing.JLabel lblShareWithMe;
     private javax.swing.JLabel lblSignIn;

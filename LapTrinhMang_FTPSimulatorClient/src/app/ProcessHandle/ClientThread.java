@@ -98,7 +98,7 @@ public class ClientThread {
             fileOutputStream.flush();   // đẩy luồng ghi vô file
             fileOutputStream.close();   // đóng quá trình ghi sau khi hoàn tất
 
-            System.out.println("Output file : " + outputFile + " được ghi thành công. ");
+//            System.out.println("Output file : " + outputFile + " được ghi thành công. ");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -140,16 +140,16 @@ public class ClientThread {
                 fileEvent.setStatus("Error");
             }
         } else {
-            System.out.println("Không tìm thấy tệp ở vị trí đã chỉ định.");
+//            System.out.println("Không tìm thấy tệp ở vị trí đã chỉ định.");
             fileEvent.setStatus("Error");
         }
 
         //Ghi đối tượng tệp vào thư mục
         try {
             objOutputStream.writeObject(fileEvent);
-            System.out.println("Đang gửi file...");
+//            System.out.println("Đang gửi file...");
             Thread.sleep(3000);
-            System.out.println("Hoàn tất!");
+//            System.out.println("Hoàn tất!");
             objOutputStream.reset();
         } catch (IOException e) {
             e.printStackTrace();
@@ -225,13 +225,13 @@ public class ClientThread {
                 fileEvent.setFileSize(len);
                 fileEvent.setFileData(fileBytes);
                 fileEvent.setStatus("Success");
-                System.out.println("Tải file lên file thành công");
+//                System.out.println("Tải file lên file thành công");
             } catch (IOException ex) {
-                System.err.println("Ghi file lên thất bại" + ex);
+//                System.err.println("Ghi file lên thất bại" + ex);
                 fileEvent.setStatus("Error");
             }
         } else {
-            System.out.println("Không tìm thấy tệp ở vị trí đã chỉ định.");
+//            System.out.println("Không tìm thấy tệp ở vị trí đã chỉ định.");
             fileEvent.setStatus("Error");
         }
         try {
@@ -269,10 +269,10 @@ public class ClientThread {
             fileOutputStream.flush();   // đẩy luồng ghi vô file
             fileOutputStream.close();   // đóng quá trình ghi sau khi hoàn tất
 
-            System.out.println("Output file : " + outputFile + " download thành công. ");
+//            System.out.println("Output file : " + outputFile + " download thành công. ");
 
         } catch (IOException ex) {
-            System.err.println("Lỗi khi lưu file" + ex);
+//            System.err.println("Lỗi khi lưu file" + ex);
         }
     }
 
@@ -360,7 +360,7 @@ public class ClientThread {
 
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG DOWNLOAD FILE - SERVER PHẢN HỒI CHO PHÉP DOWNLOAD FILE">
                     case "ACCEPT_DOWNLOAD_FILE": {
-                        System.out.println("Server trả lời mày là: " + message);
+//                        System.out.println("Server trả lời mày là: " + message);
                         FileEvent fileEvent = (FileEvent) response.getObject();
                         saveFile(fileEvent);
                         break;
@@ -369,7 +369,7 @@ public class ClientThread {
 
                     // <editor-fold defaultstate="collapsed" desc="NGẮT KẾT NỐI - SERVER PHẢN HỒI CHO PHÉP DISCONNECT">
                     case "ACCCEP_DISCONNECT": {
-                        System.out.println("Server said: " + message);
+//                        System.out.println("Server said: " + message);
                         System.err.println("Disconnecting...");
                         break;
                     }
@@ -378,7 +378,7 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG REGISTER">
                     // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KIỂM TRA ĐĂNG KÝ - ĐÍNH KÈM MÃ KÍCH HOẠT">
                     case "RESPONSE_VERIFY_REGISTER": {
-                        System.out.println("Server said: " + message);
+//                        System.out.println("Server said: " + message);
 
                         // version_1
                         // HandleResult result = (HandleResult) objInputStream.readObject();
@@ -395,8 +395,7 @@ public class ClientThread {
 
                     // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KẾT QUẢ ĐĂNG KÝ THÀNH CÔNG/THẤT BẠI">
                     case "RESPONSE_REGISTER": {
-                        System.out.println("Server said: " + message);
-                        //HandleResult result = (HandleResult) objInputStream.readObject();
+//                        System.out.println("Server said: " + message);
                         HandleResult result = (HandleResult) response.getObject();
                         if (result != null) {
                             ClientUI.processHandler(result.isSuccessed(), result.getMessage());
@@ -409,9 +408,8 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG AUTHENTICATE">
                     // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KẾT QUẢ ĐĂNG NHẬP USER THÀNH CÔNG/THẤT BẠI">
                     case "RESPONSE_AUTHENTICATE": {
-                        System.out.println("Server said: " + message);
+//                        System.out.println("Server said: " + message);
                         try {
-//                            HandleResult result = (HandleResult) objInputStream.readObject();
                             HandleResult result = (HandleResult) response.getObject();
                             if (result != null) {
                                 if (result.isSuccessed()) {
@@ -440,9 +438,8 @@ public class ClientThread {
 
                     // <editor-fold defaultstate="collapsed" desc="SERVER PHẢN HỒI KẾT QUẢ ĐĂNG NHẬP VỚI QUYỀN ANONYMOUS">
                     case "RESPONSE_AUTHENTICATE_ANONYMOUS": {
-                        System.out.println("Server said: " + message);
+//                        System.out.println("Server said: " + message);
                         try {
-//                            HandleResult result = (HandleResult) objInputStream.readObject();
                             HandleResult result = (HandleResult) response.getObject();
                             if (result != null) {
                                 if (result.isSuccessed()) {
@@ -541,7 +538,7 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG CẬP NHẬT DUNG LƯỢNG LƯU TRỮ TỐI ĐA CHO USER - SERVER PHẢN HỒI UPDATE FOLDER SIZE">
                     case "UPDATE_FOLDER_SIZE_USER": {
                         String newSize = (String) response.getObject();
-                        System.out.println(newSize);
+//                        System.out.println(newSize);
                         if (ClientUI.folderInfo != null) {
                             // lấy ra dung lượng lưu trữ cũ của folder
                             String oldSize = ClientUI.folderInfo.getSize().replaceAll(",", "");
@@ -550,19 +547,20 @@ public class ClientThread {
                             String oldRemanningSize = ClientUI.folderInfo.getRemainingSize().replaceAll(",", "");
 
                             // lấy ra kích thước folder đã sử dụng
-                            String usedSize = String.valueOf(Long.parseLong(oldSize) - Long.parseLong(oldRemanningSize));
+                            String usedSize = String.valueOf(Double.parseDouble(oldSize) - Double.parseDouble(oldRemanningSize));
 
                             // cập nhật lại dung lượng lưu trữ mới cho folder của user
                             ClientUI.folderInfo.setSize(newSize);
 
                             // cập nhật dung lượng còn lại cho folder của user
-                            String newRemanningSize = String.valueOf(Long.parseLong(newSize) - Long.parseLong(usedSize));
-                            System.out.println(newRemanningSize);
-                            if (Long.parseLong(newRemanningSize) <= 0) {  // nếu âm -> gán = 0 luôn
+                            String newRemanningSize = String.valueOf(Double.parseDouble(newSize) - Double.parseDouble(usedSize));
+//                            System.out.println(newRemanningSize);
+                            if (Double.parseDouble(newRemanningSize) <= 0) {  // nếu âm -> gán = 0 luôn
                                 ClientUI.folderInfo.setRemainingSize("0");
                             } else {
                                 ClientUI.folderInfo.setRemainingSize(newRemanningSize);
                             }
+                            ClientUI.loadProcessMemory();
                         }
                         break;
                     }
@@ -571,7 +569,7 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG CẬP NHẬT KÍCH THƯỚC TỐI ĐA UPLOAD FILE">
                     case "UPDATE_FILE_SIZE_UPLOAD": {
                         String newSizeUpload = (String) response.getObject();
-                        System.out.println(newSizeUpload);
+//                        System.out.println(newSizeUpload);
                         if (ClientUI.userInfo != null) {
                             ClientUI.userInfo.setFileSizeUpload(newSizeUpload);
                         }
@@ -582,7 +580,7 @@ public class ClientThread {
                     // <editor-fold defaultstate="collapsed" desc="CHỨC NĂNG CẬP NHẬT KÍCH THƯỚC TỐI ĐA DOWNLOAD FILE">
                     case "UPDATE_FILE_SIZE_DOWNLOAD": {
                         String newSizeDownload = (String) response.getObject();
-                        System.out.println(newSizeDownload);
+//                        System.out.println(newSizeDownload);
                         if (ClientUI.userInfo != null) {
                             ClientUI.userInfo.setFileSizeDownload(newSizeDownload);
                         }

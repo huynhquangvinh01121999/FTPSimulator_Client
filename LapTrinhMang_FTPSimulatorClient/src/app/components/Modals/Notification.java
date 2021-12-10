@@ -21,6 +21,7 @@ public class Notification extends javax.swing.JDialog {
 
         index = (ClientUI) parent;
         loadDataNofitication();
+        setLocation(index.jLabel15.getLocation());
     }
 
     private void loadDataNofitication() {

@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import models.FileEvent;
@@ -26,6 +27,7 @@ import models.Folders;
 import models.HandleResult;
 import models.ObjectRequest;
 import models.UpdateResultFolderUserPermission;
+import models.Users;
 
 /**
  *
@@ -99,7 +101,6 @@ public class ClientThread {
             fileOutputStream.close();   // đóng quá trình ghi sau khi hoàn tất
 
 //            System.out.println("Output file : " + outputFile + " được ghi thành công. ");
-
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -210,6 +211,9 @@ public class ClientThread {
         fileEvent.setFilename(FileExtensions.getFileName(file));
         fileEvent.setDestinationDirectory(destinationPath);
 
+        // FTP - file tranfer protocol
+        // FileInputStream
+        // FileOutputStream
         if (file.isFile()) {
             try {
                 // DataInputStream đọc dữ liệu nguyên thủy từ luồng đầu vào ( ở đây là file đầu vào)
@@ -221,9 +225,9 @@ public class ClientThread {
                 while (read < fileBytes.length && (numRead = diStream.read(fileBytes, read, fileBytes.length - read)) >= 0) {
                     read = read + numRead;
                 }
+                fileEvent.setFileData(fileBytes);
 
                 fileEvent.setFileSize(len);
-                fileEvent.setFileData(fileBytes);
                 fileEvent.setStatus("Success");
 //                System.out.println("Tải file lên file thành công");
             } catch (IOException ex) {
@@ -270,7 +274,6 @@ public class ClientThread {
             fileOutputStream.close();   // đóng quá trình ghi sau khi hoàn tất
 
 //            System.out.println("Output file : " + outputFile + " download thành công. ");
-
         } catch (IOException ex) {
 //            System.err.println("Lỗi khi lưu file" + ex);
         }
@@ -615,6 +618,19 @@ public class ClientThread {
                         }
                         // load thông báo
                         LoadNotification(data.getMessage());
+                        break;
+                    }
+                    // </editor-fold>
+
+                    // <editor-fold defaultstate="collapsed" desc="FETCH_USERS_SUCCESS">
+                    case "FETCH_USERS_SUCCESS": {
+                        try {
+                            HandleResult result = (HandleResult) response.getObject();
+                            ClientUI.processFetchUsers = false;
+                            ClientUI.listUserSearch = result.getListUsers();
+                        } catch (Exception ex) {
+                            System.out.println("fetch users error");
+                        }
                         break;
                     }
                     // </editor-fold>

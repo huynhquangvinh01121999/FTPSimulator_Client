@@ -8,6 +8,7 @@ package app.components.Modals;
 import app.ProcessHandle.ClientThread;
 import app.components.ClientUI;
 import features.utilities.FileExtensions;
+import features.utilities.Validations;
 import java.awt.CardLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
 import models.DataShare;
 import models.Files;
 import models.Folders;
+import models.Users;
 
 /**
  *
@@ -482,29 +484,43 @@ public class SharePeople extends javax.swing.JDialog {
                 for (String item : peopleShares.split(";")) {
                     listPeopleShare.add(item);
                 }
-                permissionSelected = permissionSelected.split("|")[0].trim();
-                switch (selectedTypeShare) {
-                    case "File": {
-                        if (listIdFileSelected.size() > 0) {
-                            DataShare dataShare = new DataShare(listIdFileSelected, listPeopleShare, permissionSelected, fromEmail);
-                            ClientThread.request("share_files", dataShare);
-                            Message("Chia sẻ file thành công.!!!");
-                            this.dispose();
-                        } else {
-                            Message("Vui lòng chọn file cần chia sẻ.!!!");
-                        }
+
+                // check danh sách email
+                boolean flagCheckEmail = true;
+                for (String email : listPeopleShare) {
+                    CheckEmailResult result = checkEmailShared(email.trim());
+                    if (!result.isIsSuccess()) {
+                        Message(result.getMessage());
+                        flagCheckEmail = false;
                         break;
                     }
-                    case "Folder": {
-                        if (folderIdSelected != null) {
-                            DataShare dataShare = new DataShare(folderIdSelected, listPeopleShare, permissionSelected, fromEmail);
-                            ClientThread.request("share_folder", dataShare);
-                            Message("Chia sẻ thư mục thành công.!!!");
-                            this.dispose();
-                        } else {
-                            Message("Vui lòng chọn folder cần chia sẻ.!!!");
+                }
+
+                if (flagCheckEmail) {
+                    permissionSelected = permissionSelected.split("|")[0].trim();
+                    switch (selectedTypeShare) {
+                        case "File": {
+                            if (listIdFileSelected.size() > 0) {
+                                DataShare dataShare = new DataShare(listIdFileSelected, listPeopleShare, permissionSelected, fromEmail);
+                                ClientThread.request("share_files", dataShare);
+                                Message("Chia sẻ file thành công.!!!");
+                                this.dispose();
+                            } else {
+                                Message("Vui lòng chọn file cần chia sẻ.!!!");
+                            }
+                            break;
                         }
-                        break;
+                        case "Folder": {
+                            if (folderIdSelected != null) {
+                                DataShare dataShare = new DataShare(folderIdSelected, listPeopleShare, permissionSelected, fromEmail);
+                                ClientThread.request("share_folder", dataShare);
+                                Message("Chia sẻ thư mục thành công.!!!");
+                                this.dispose();
+                            } else {
+                                Message("Vui lòng chọn folder cần chia sẻ.!!!");
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -543,6 +559,67 @@ public class SharePeople extends javax.swing.JDialog {
             }
         }
         return false;
+    }
+
+    // kiểm tra email được chia sẻ
+    private CheckEmailResult checkEmailShared(String email) {
+        List<Users> users = index.listUserSearch;
+        int flagCheckExist = 0;
+        if (users != null && users.size() > 0) {
+
+            if (Validations.isEmail(email.trim())) {
+                // kiểm tra email có tồn tại trong danh sách người dùng không
+                for (Users item : users) {
+                    if (item.getEmail().trim().equals(email)) {
+                        flagCheckExist++;
+                    }
+                }
+
+                // nếu không tồn tại
+                if (flagCheckExist == 0) {
+                    return new CheckEmailResult(false, "Không tồn tại email " + email.trim());
+                } else {
+                    // kiểm tra email đầu vào có trùng với tên người đang chia sẻ không
+                    if (!fromEmail.trim().equals(email.trim())) {
+                        return new CheckEmailResult(true, "ok");
+                    } else {
+                        return new CheckEmailResult(false, "Bạn không thể tự chia sẻ cho chính mình.!!!");
+                    }
+                }
+            } else {
+                return new CheckEmailResult(false, "Email " + email.trim() + " không đúng định dạng");
+            }
+        } else {
+            return new CheckEmailResult(false, "Không có người dùng nào sử dụng hệ thống này\nnên không thể chia sẻ.!!!");
+        }
+    }
+
+    private class CheckEmailResult {
+
+        private boolean isSuccess;
+        private String message;
+
+        public CheckEmailResult(boolean isSuccess, String message) {
+            this.isSuccess = isSuccess;
+            this.message = message;
+        }
+
+        public boolean isIsSuccess() {
+            return isSuccess;
+        }
+
+        public void setIsSuccess(boolean isSuccess) {
+            this.isSuccess = isSuccess;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
     }
 
     @SuppressWarnings("unchecked")

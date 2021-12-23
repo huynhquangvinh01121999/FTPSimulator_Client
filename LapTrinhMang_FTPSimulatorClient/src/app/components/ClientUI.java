@@ -1691,7 +1691,13 @@ public class ClientUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnSignIn_AnonymousActionPerformed
 
+    public static List<Users> listUserSearch = new ArrayList<>();
+    public static boolean processFetchUsers = true;
     private void btnShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShareActionPerformed
+        ClientThread.request("FETCH_USERS", userInfo.getEmail().trim());  
+        while (processFetchUsers) {
+            System.out.println("fetching users...");
+        }
         SharePeople share = new SharePeople(this, rootPaneCheckingEnabled);
         share.show();
     }//GEN-LAST:event_btnShareActionPerformed
@@ -1943,7 +1949,9 @@ public class ClientUI extends javax.swing.JFrame {
         Users user = new Users();
         user.setEmail(txtLoginEmail.getText());
         user.setPassword(Encryptions.md5(String.valueOf(txtLoginPass.getPassword())));
+        
         ClientThread.request("authenticate", user);
+        
         while (processHandler) {
             System.out.println("watting handler authenticate...");
             // do not something...
@@ -2134,7 +2142,7 @@ public class ClientUI extends javax.swing.JFrame {
                                 fileInfo.setPrexEmail(prexEmailInfo);
 
                                 ClientThread.requestFileSender("upload_file", fileInfo, file, locationYourFolder);
-
+                                
                                 // Kiểm tra tên file khi upload đã tồn tại chưa???
                                 checkFileNameExist(fileInfo);
                                 showDataMyFileCloud();
